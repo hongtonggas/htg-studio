@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HTG Content Studio</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+:root{--page:#F7F4ED;--surface:#FFF;--raised:#FDFBF6;--ink:#211D14;--ink2:#5C564A;--ink3:#8B8578;--line:#E5E0D3;--gold:#9A7118;--goldbg:#F4EBD7;--goldst:#B8891F;--good:#0B7A0B;--warn:#B97A00;--crit:#C23636}
+@media(prefers-color-scheme:dark){:root{--page:#141210;--surface:#1F1C17;--raised:#282419;--ink:#F2EDDF;--ink2:#C8C1AE;--ink3:#948D7C;--line:#332F26;--gold:#E5B84B;--goldbg:#33290F;--goldst:#E5B84B;--good:#3DBB3D;--warn:#E5A62E;--crit:#E36868}}
+*{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font-family:"Leelawadee UI","Segoe UI","Noto Sans Thai",system-ui,sans-serif;font-size:15px;line-height:1.55}
+#gate{display:grid;place-items:center;min-height:100vh;padding:24px;text-align:center;color:var(--ink2)}
+header{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--goldst),#7A5A10);color:#FFF8E8;font-weight:700;display:grid;place-items:center;font-size:17px}
+.bname{font-weight:700;font-size:14px;line-height:1.2}.bsub{font-size:11px;color:var(--ink3)}
+.who{margin-inline-start:auto;font-size:12px;color:var(--ink2);background:var(--raised);border:1px solid var(--line);border-radius:99px;padding:4px 12px}
+nav{display:flex;gap:6px;overflow-x:auto;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:55px;z-index:9}
+nav button{border:1px solid var(--line);background:var(--raised);color:var(--ink2);border-radius:99px;padding:6px 14px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer}
+nav button.on{background:var(--goldbg);color:var(--gold);border-color:var(--gold);font-weight:700}
+main{padding:14px;max-width:1100px;margin:0 auto;display:grid;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px 16px}
+.card h2{font-size:15px;margin:0 0 10px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+.tile b{font-size:26px;font-variant-numeric:tabular-nums}.tile span{display:block;font-size:12px;color:var(--ink2)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:start;font-size:11px;color:var(--ink3);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto}
+.pill{display:inline-block;font-size:11px;font-weight:600;border-radius:99px;padding:1px 9px;border:1px solid var(--line);color:var(--ink2);background:var(--raised);white-space:nowrap}
+.pill.gold{color:var(--gold);background:var(--goldbg);border-color:transparent}.pill.good{color:var(--good)}.pill.warn{color:var(--warn)}.pill.crit{color:var(--crit)}
+.tk{border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;background:var(--surface);display:grid;gap:7px}
+.tk.cur{border-color:var(--gold)}.tk.lock{opacity:.55}
+.tk .h{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.tk .n{width:25px;height:25px;border-radius:7px;background:var(--raised);border:1px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:700}
+.tk.done .n{background:var(--good);border-color:var(--good);color:#fff}.tk.cur .n{background:var(--goldst);border-color:var(--goldst);color:#FFF8E8}
+.tk .t{font-weight:700;font-size:13.5px}.tk .h .pill{margin-inline-start:auto}
+.tk .meta{font-size:11.5px;color:var(--ink3)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink2);border-radius:9px;padding:7px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn.p{background:var(--goldst);border-color:var(--goldst);color:#FFF8E8}.btn.d{color:var(--crit)}
+input,textarea,select{font:inherit;width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--raised);color:var(--ink)}
+label{font-size:12px;color:var(--ink2);display:block;margin:8px 0 4px}
+.note{font-size:12px;color:var(--ink3);background:var(--raised);border:1px dashed var(--line);border-radius:10px;padding:8px 12px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--page);font-size:13px;padding:9px 18px;border-radius:99px;opacity:0;transition:.2s;pointer-events:none;z-index:50}
+.toast.s{opacity:1}
+a{color:var(--gold)}
+.jl{cursor:pointer}
+</style>
+</head>
+<body>
+<div id="gate">กำลังเข้าสู่ระบบ…</div>
+<div id="app" hidden>
+<header>
+  <div class="mark">ห</div>
+  <div><div class="bname">HTG Content Studio</div><div class="bsub">หงษ์ทอง ออโต้แก๊ส · ระบบจริง</div></div>
+  <div class="who" id="who">…</div>
+</header>
+<nav>
+  <button data-v="home" class="on">ภาพรวม</button>
+  <button data-v="tasks">Task ทั้งหมด</button>
+  <button data-v="idea">+ ไอเดียใหม่</button>
+  <button id="rf">↻ รีเฟรช</button>
+</nav>
+<main id="view"></main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const LIFF_ID = '2010674866-OUDNkZGp';
+const API = 'https://n8n.hongtonggas.net/webhook/cf-studio-api';
+const STEP_HUMAN = {4:1, 9:1};
+let TOKEN = localStorage.cfst || '', ME = null, CUR = 'home', CUR_JOB = null;
+const $ = s => document.querySelector(s);
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('s'); setTimeout(()=>t.classList.remove('s'), 2600); }
+function gate(m){ $('#gate').textContent = m; $('#gate').hidden = false; $('#app').hidden = true; }
+async function api(action, data){
+  const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({action, token:TOKEN}, data||{})) });
+  return r.json();
+}
+async function boot(){
+  try { await liff.init({ liffId: LIFF_ID }); } catch(e){ gate('เปิดผ่าน LINE หรือลิงก์ Studio เท่านั้น (' + e.message + ')'); return; }
+  if (TOKEN){ const me = await api('me'); if (me.ok){ ME = me; return start(); } TOKEN = ''; localStorage.removeItem('cfst'); }
+  if (!liff.isLoggedIn()){ liff.login({ redirectUri: location.href }); return; }
+  const idt = liff.getIDToken();
+  if (!idt){ gate('ไม่ได้รับ token จาก LINE — ปิดแล้วเปิดใหม่'); return; }
+  const r = await api('login', { idToken: idt });
+  if (r.ok){ TOKEN = r.token; localStorage.cfst = TOKEN; ME = r; start(); }
+  else if (r.error === 'not_in_team'){ gate('บัญชี LINE นี้ยังไม่ถูกเพิ่มในทีม — แจ้ง Ed ให้เพิ่มชื่อก่อนครับ'); }
+  else gate('เข้าระบบไม่สำเร็จ: ' + (r.error || 'unknown'));
+}
+function start(){
+  $('#gate').hidden = true; $('#app').hidden = false;
+  $('#who').textContent = ME.name + ' · ' + ({owner:'เจ้าของ',creator:'ครีเอเตอร์',tech:'เทคนิค',viewer:'ผู้ชม'}[ME.role] || ME.role);
+  document.querySelectorAll('nav [data-v]').forEach(b => b.onclick = () => { CUR = b.dataset.v; CUR_JOB = null; document.querySelectorAll('nav [data-v]').forEach(x=>x.classList.toggle('on', x===b)); render(); });
+  $('#rf').onclick = render;
+  render();
+}
+async function render(){
+  const v = $('#view'); v.innerHTML = '<div class="note">กำลังโหลด…</div>';
+  try {
+    if (CUR_JOB) return renderJob(CUR_JOB);
+    if (CUR === 'home') return renderHome();
+    if (CUR === 'tasks') return renderTasks();
+    if (CUR === 'idea') return renderIdea();
+  } catch(e){ v.innerHTML = '<div class="note">ผิดพลาด: ' + e.message + '</div>'; }
+}
+function statePill(s){
+  const m = { locked:['🔒 รอขั้นก่อน',''], waiting_example:['รอทีมแนบของจริง/ตัวอย่าง','warn'], proposing:['AI กำลังเสนอ','gold'], reviewing:['รอตรวจ','crit'], revise:['ส่งแก้ — AI ทำใหม่','warn'], executing:['กำลังผลิต','gold'], passed:['✓ ผ่าน','good'], skipped:['— ข้าม (ภาพนิ่ง)',''] };
+  const x = m[s] || [s,''];
+  return '<span class="pill ' + x[1] + '">' + x[0] + '</span>';
+}
+async function renderHome(){
+  const d = await api('home');
+  if (!d.ok) return gateIf(d);
+  const t = d.counts || {};
+  let h = '<div class="tiles">'
+    + tile(t.reviewing||0, 'รอทีมตรวจ') + tile(t.waiting||0, 'รอของจริง/ตัวอย่าง')
+    + tile(t.ai||0, 'คิวฝั่ง AI') + tile(t.done_week||0, 'เสร็จสัปดาห์นี้') + '</div>';
+  h += '<div class="card"><h2>ใบงานทั้งหมด (แตะเพื่อเปิด)</h2><div class="tw"><table><thead><tr><th>#</th><th>เรื่อง</th><th>ชนิด</th><th>ถึงขั้น</th><th>สถานะขั้นปัจจุบัน</th></tr></thead><tbody>';
+  (d.jobs||[]).forEach(j => {
+    h += '<tr class="jl" onclick="openJob(' + j.id + ')"><td>' + j.id + '</td><td>' + esc(j.title) + (j.urgent ? ' <span class="pill crit">ด่วน</span>' : '') + '</td><td>' + (j.job_type==='still_image'?'ภาพนิ่ง':'วิดีโอ') + '</td><td class="pill gold">' + j.current_step + '/10</td><td>' + statePill(j.cur_state) + '</td></tr>';
+  });
+  h += '</tbody></table></div></div>';
+  h += '<div class="note">กติกาเหล็ก: AI ห้ามทำขั้นถัดไปเองจนกว่าทีมตรวจผ่าน · ขั้นมีค่าใช้จ่ายล็อกจนกด "ผ่าน"</div>';
+  $('#view').innerHTML = h;
+}
+async function renderTasks(){
+  const d = await api('tasks');
+  if (!d.ok) return gateIf(d);
+  let h = '<div class="card"><h2>Task ที่ยังไม่จบทั้งหมด</h2><div class="tw"><table><thead><tr><th>ใบงาน</th><th>ขั้น</th><th>งาน</th><th>สถานะ</th><th>เครื่องมือ</th></tr></thead><tbody>';
+  (d.tasks||[]).forEach(t => {
+    h += '<tr class="jl" onclick="openJob(' + t.job_id + ')"><td>#' + t.job_id + ' ' + esc(t.title||'') + '</td><td class="pill">' + t.step_no + '/10</td><td>' + esc(t.name) + '</td><td>' + statePill(t.state) + '</td><td>' + esc(t.tool||'') + '</td></tr>';
+  });
+  h += '</tbody></table></div></div>';
+  $('#view').innerHTML = h;
+}
+window.openJob = id => { CUR_JOB = id; render(); };
+async function renderJob(id){
+  const d = await api('job', { job_id: id });
+  if (!d.ok) return gateIf(d);
+  const j = d.job;
+  let h = '<div class="card"><h2>ใบงาน #' + j.id + ' — ' + esc(j.title) + '</h2>'
+    + '<div class="meta" style="font-size:12px;color:var(--ink3)">' + (j.job_type==='still_image'?'ภาพนิ่ง':'วิดีโอ') + ' · pillar: ' + esc(j.pillar||'-') + ' · ถึงขั้น ' + j.current_step + '/10'
+    + '</div><div style="margin-top:8px"><button class="btn" onclick="CUR_JOB=null;render()">← กลับ</button></div></div>';
+  (d.tasks||[]).forEach(t => {
+    const cls = t.state==='passed'||t.state==='skipped' ? 'done' : (t.state==='locked' ? 'lock' : 'cur');
+    h += '<div class="tk ' + cls + '"><div class="h"><span class="n">' + t.step_no + '</span><span class="t">' + esc(t.name) + '</span>' + statePill(t.state) + '</div>';
+    if (t.proposal) h += '<div class="meta">ข้อเสนอ AI: ' + esc(JSON.stringify(t.proposal).slice(0,300)) + '</div>';
+    if (t.examples && t.examples.length) h += '<div class="meta">ตัวอย่างแนบ: ' + t.examples.length + ' รายการ</div>';
+    if (t.review_notes) h += '<div class="meta">หมายเหตุ: ' + esc(t.review_notes) + '</div>';
+    if (['reviewing','waiting_example','proposing'].includes(t.state) && ME.role !== 'viewer'){
+      h += '<div class="acts">';
+      if (t.state === 'reviewing' || t.state === 'waiting_example')
+        h += '<button class="btn p" onclick="act(' + t.id + ',\'approve\')">✓ ผ่านขั้นนี้</button>'
+           + '<button class="btn" onclick="act(' + t.id + ',\'revise\')">↩ ส่งแก้</button>';
+      h += '<button class="btn" onclick="act(' + t.id + ',\'example\')">📎 แนบตัวอย่าง/ลิงก์</button></div>';
+    }
+    h += '</div>';
+  });
+  $('#view').innerHTML = h;
+}
+window.act = async (taskId, kind) => {
+  let payload = { task_id: taskId };
+  if (kind === 'revise'){ const n = prompt('เหตุผลส่งแก้ (AI จะจดเป็นบทเรียน):'); if (n === null) return; payload.note = n; }
+  if (kind === 'example'){ const u = prompt('วางลิงก์ตัวอย่าง/ไฟล์ (Drive/fal URL):'); if (!u) return; payload.url = u; payload.note = prompt('อธิบายสั้น ๆ (ไม่ใส่ก็ได้):') || ''; }
+  const d = await api('task_' + kind, payload);
+  if (d.ok){ toast(kind==='approve' ? 'ผ่านแล้ว — ปลดล็อกขั้นถัดไป' : kind==='revise' ? 'ส่งแก้แล้ว — บันทึกบทเรียน' : 'แนบแล้ว'); render(); }
+  else toast('ผิดพลาด: ' + (d.error||''));
+};
+function renderIdea(){
+  $('#view').innerHTML = '<div class="card"><h2>หย่อนไอเดีย → AI เสนอก่อน ไม่ผลิตจนกว่าทีมเลือก</h2>'
+    + '<label>หัวเรื่อง/สิ่งที่อยากได้</label><input id="it" placeholder="เช่น ลูกค้าถามบ่อย: ติดแก๊สแล้วประกันรถขาดไหม">'
+    + '<label>รายละเอียดเพิ่ม (ไม่บังคับ — ยิ่งละเอียด AI ยิ่งเสนอตรง)</label><textarea id="idt" rows="4" placeholder="โทน/แพลตฟอร์ม/ตัวอย่างที่ชอบ/ของที่มีในคลัง"></textarea>'
+    + '<div class="acts" style="margin-top:12px"><button class="btn p" id="ib">+ สร้างใบงาน</button></div>'
+    + '<div class="note" style="margin-top:10px">สร้างแล้วใบงานจะเริ่มที่ขั้น 1 สถานะ "AI กำลังเสนอ" — AI จะเสนอ 5 หัวข้อ/มุมให้เลือกในใบงาน</div></div>';
+  $('#ib').onclick = async () => {
+    const title = $('#it').value.trim(); if (!title){ toast('ใส่หัวเรื่องก่อน'); return; }
+    const d = await api('idea', { title, detail: $('#idt').value.trim() });
+    if (d.ok){ toast('สร้างใบงาน #' + d.job_id + ' แล้ว'); CUR_JOB = d.job_id; render(); }
+    else toast('ผิดพลาด: ' + (d.error||''));
+  };
+}
+function tile(n, l){ return '<div class="tile"><b>' + n + '</b><span>' + l + '</span></div>'; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function gateIf(d){ if (d.error === 'auth'){ TOKEN=''; localStorage.removeItem('cfst'); location.reload(); } else $('#view').innerHTML = '<div class="note">ผิดพลาด: ' + esc(d.error||'') + '</div>'; }
+boot();
+</script>
+</body>
+</html>
