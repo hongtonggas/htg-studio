@@ -72,21 +72,24 @@ const STEP_HUMAN = {4:1, 9:1};
 let TOKEN = localStorage.cfst || '', ME = null, CUR = 'home', CUR_JOB = null;
 const $ = s => document.querySelector(s);
 function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('s'); setTimeout(()=>t.classList.remove('s'), 2600); }
-function gate(m){ $('#gate').textContent = m; $('#gate').hidden = false; $('#app').hidden = true; }
+function gate(m){ const g = $('#gate'); g.innerHTML = ''; const d = document.createElement('div'); d.textContent = m; const b = document.createElement('button'); b.textContent = '↻ ลองใหม่'; b.style.cssText = 'display:block;margin:14px auto 0;padding:9px 22px;border-radius:9px;border:1px solid #B8891F;background:#B8891F;color:#FFF8E8;font:inherit;font-weight:700;cursor:pointer'; b.onclick = () => location.reload(); g.appendChild(d); g.appendChild(b); g.hidden = false; $('#app').hidden = true; }
+setTimeout(() => { const g = $('#gate'); if (!g.hidden && g.textContent.indexOf('กำลังเข้าสู่ระบบ') >= 0) gate('ระบบตอบช้ากว่าปกติ — แตะลองใหม่ ถ้าไม่หายให้เปิดแท็บใหม่ใน Chrome/Safari แล้วถ่ายหน้าจอนี้ส่งให้ Fable'); }, 15000);
 async function api(action, data){
   const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({action, token:TOKEN}, data||{})) });
   return r.json();
 }
 async function boot(){
   try { await liff.init({ liffId: LIFF_ID }); } catch(e){ gate('เปิดผ่าน LINE หรือลิงก์ Studio เท่านั้น (' + e.message + ')'); return; }
-  if (TOKEN){ const me = await api('me'); if (me.ok){ ME = me; return start(); } TOKEN = ''; localStorage.removeItem('cfst'); }
-  if (!liff.isLoggedIn()){ liff.login({ redirectUri: location.href }); return; }
-  const idt = liff.getIDToken();
-  if (!idt){ gate('ไม่ได้รับ token จาก LINE — ปิดแล้วเปิดใหม่'); return; }
-  const r = await api('login', { idToken: idt });
-  if (r.ok){ TOKEN = r.token; localStorage.cfst = TOKEN; ME = r; start(); }
-  else if (r.error === 'not_in_team'){ gate('บัญชี LINE นี้ยังไม่ถูกเพิ่มในทีม — แจ้ง Ed ให้เพิ่มชื่อก่อนครับ'); }
-  else gate('เข้าระบบไม่สำเร็จ: ' + (r.error || 'unknown'));
+  try {
+    if (TOKEN){ const me = await api('me'); if (me.ok){ ME = me; return start(); } TOKEN = ''; localStorage.removeItem('cfst'); }
+    if (!liff.isLoggedIn()){ liff.login({ redirectUri: location.href }); return; }
+    const idt = liff.getIDToken();
+    if (!idt){ gate('ไม่ได้รับ token จาก LINE — แตะลองใหม่'); return; }
+    const r = await api('login', { idToken: idt });
+    if (r.ok){ TOKEN = r.token; localStorage.cfst = TOKEN; ME = r; start(); }
+    else if (r.error === 'not_in_team'){ gate('บัญชี LINE นี้ยังไม่ถูกเพิ่มในทีม — แจ้ง Ed ให้เพิ่มชื่อก่อนครับ'); }
+    else gate('เข้าระบบไม่สำเร็จ: ' + (r.error || 'unknown'));
+  } catch(e){ gate('เชื่อมต่อระบบไม่ได้: ' + e.message + ' — เช็คอินเทอร์เน็ตแล้วแตะลองใหม่'); }
 }
 function start(){
   $('#gate').hidden = true; $('#app').hidden = false;
