@@ -60,6 +60,7 @@ a{color:var(--gold)}
   <button data-v="home" class="on">ภาพรวม</button>
   <button data-v="tasks">Task ทั้งหมด</button>
   <button data-v="idea">+ ไอเดียใหม่</button>
+  <button data-v="team" id="teamBtn" hidden>ทีม</button>
   <button id="rf">↻ รีเฟรช</button>
 </nav>
 <main id="view"></main>
@@ -87,13 +88,14 @@ async function boot(){
     if (!idt){ gate('ไม่ได้รับ token จาก LINE — แตะลองใหม่'); return; }
     const r = await api('login', { idToken: idt });
     if (r.ok){ TOKEN = r.token; localStorage.cfst = TOKEN; ME = r; start(); }
-    else if (r.error === 'not_in_team'){ gate('บัญชี LINE นี้ยังไม่ถูกเพิ่มในทีม — แจ้ง Ed ให้เพิ่มชื่อก่อนครับ'); }
+    else if (r.error === 'not_in_team'){ gate('บัญชี LINE นี้ยังไม่ถูกเพิ่มในทีม — ส่งรหัสนี้ให้ Ed เพิ่มชื่อ: ' + (r.uid || '(ไม่ทราบ)')); }
     else gate('เข้าระบบไม่สำเร็จ: ' + (r.error || 'unknown'));
   } catch(e){ gate('เชื่อมต่อระบบไม่ได้: ' + e.message + ' — เช็คอินเทอร์เน็ตแล้วแตะลองใหม่'); }
 }
 function start(){
   $('#gate').hidden = true; $('#app').hidden = false;
   $('#who').textContent = ME.name + ' · ' + ({owner:'เจ้าของ',creator:'ครีเอเตอร์',tech:'เทคนิค',viewer:'ผู้ชม'}[ME.role] || ME.role);
+  $('#teamBtn').hidden = ME.role !== 'owner';
   document.querySelectorAll('nav [data-v]').forEach(b => b.onclick = () => { CUR = b.dataset.v; CUR_JOB = null; document.querySelectorAll('nav [data-v]').forEach(x=>x.classList.toggle('on', x===b)); render(); });
   $('#rf').onclick = render;
   render();
@@ -105,6 +107,7 @@ async function render(){
     if (CUR === 'home') return renderHome();
     if (CUR === 'tasks') return renderTasks();
     if (CUR === 'idea') return renderIdea();
+    if (CUR === 'team') return renderTeam();
   } catch(e){ v.innerHTML = '<div class="note">ผิดพลาด: ' + e.message + '</div>'; }
 }
 function statePill(s){
@@ -148,19 +151,72 @@ async function renderJob(id){
   (d.tasks||[]).forEach(t => {
     const cls = t.state==='passed'||t.state==='skipped' ? 'done' : (t.state==='locked' ? 'lock' : 'cur');
     h += '<div class="tk ' + cls + '"><div class="h"><span class="n">' + t.step_no + '</span><span class="t">' + esc(t.name) + '</span>' + statePill(t.state) + '</div>';
-    if (t.proposal) h += '<div class="meta">ข้อเสนอ AI: ' + esc(JSON.stringify(t.proposal).slice(0,300)) + '</div>';
+    if (t.proposal) h += renderProposal(t);
     if (t.examples && t.examples.length) h += '<div class="meta">ตัวอย่างแนบ: ' + t.examples.length + ' รายการ</div>';
     if (t.review_notes) h += '<div class="meta">หมายเหตุ: ' + esc(t.review_notes) + '</div>';
     if (['reviewing','waiting_example','proposing'].includes(t.state) && ME.role !== 'viewer'){
+      const isOptions = t.proposal && Array.isArray(t.proposal.options);
       h += '<div class="acts">';
+      if ((t.state === 'reviewing' || t.state === 'waiting_example') && !isOptions)
+        h += '<button class="btn p" onclick="act(' + t.id + ',\'approve\')">✓ ผ่านขั้นนี้</button>';
       if (t.state === 'reviewing' || t.state === 'waiting_example')
-        h += '<button class="btn p" onclick="act(' + t.id + ',\'approve\')">✓ ผ่านขั้นนี้</button>'
-           + '<button class="btn" onclick="act(' + t.id + ',\'revise\')">↩ ส่งแก้</button>';
+        h += '<button class="btn" onclick="act(' + t.id + ',\'revise\')">↩ ส่งแก้</button>';
       h += '<button class="btn" onclick="act(' + t.id + ',\'example\')">📎 แนบตัวอย่าง/ลิงก์</button></div>';
     }
     h += '</div>';
   });
   $('#view').innerHTML = h;
+}
+function renderProposal(t){
+  const p = t.proposal; if (!p) return '';
+  let h = '';
+  if (Array.isArray(p.options)){
+    h += '<div class="meta"><b>AI เสนอ ' + p.options.length + ' แบบ — เลือก 1 หรือกดส่งแก้เพื่อขอชุดใหม่:</b></div>';
+    p.options.forEach((o, i) => {
+      h += '<div class="tk" style="margin-top:4px"><div class="h"><span class="n">' + (i+1) + '</span><span class="t">' + esc(o.title || o.name || ('แบบ ' + (i+1))) + '</span></div>';
+      if (o.hook) h += '<div class="meta">Hook: ' + esc(o.hook) + '</div>';
+      if (o.angle) h += '<div class="meta">มุม: ' + esc(o.angle) + '</div>';
+      if (o.beats) h += '<div class="meta">โครง: ' + esc((o.beats || []).join(' → ')) + '</div>';
+      if (o.cta) h += '<div class="meta">CTA: ' + esc(o.cta) + '</div>';
+      if (o.hook_type || o.pillar) h += '<div class="meta">' + esc(o.hook_type || '') + (o.pillar ? ' · ' + esc(o.pillar) : '') + '</div>';
+      if (o.why) h += '<div class="meta">💡 ' + esc(o.why) + '</div>';
+      if (t.state === 'reviewing' && ME.role !== 'viewer') h += '<div class="acts"><button class="btn p" onclick="pick(' + t.id + ',' + i + ')">✓ เลือกแบบนี้</button></div>';
+      h += '</div>';
+    });
+    return h;
+  }
+  if (p.hooks || p.lines){
+    h += '<div class="meta"><b>สคริปต์ที่ AI เสนอ:</b></div>';
+    (p.hooks || []).forEach((k, i) => h += '<div class="meta">Hook ' + (i ? 'B' : 'A') + ': ' + esc(k) + '</div>');
+    (p.lines || []).forEach(l => h += '<div class="meta">[' + esc(l.t || '') + '] 🎙 ' + esc(l.voice || '') + (l.screen ? ' · 🖼 ' + esc(l.screen) : '') + '</div>');
+    if (p.subs) h += '<div class="meta">ซับ ' + p.subs.length + ' ท่อน: ' + esc(p.subs.map(s => s.text).join(' / ').slice(0, 200)) + '</div>';
+    if (p.caption) h += '<div class="meta">แคปชั่น: ' + esc(p.caption) + '</div>';
+    return h;
+  }
+  if (p.cover_concepts){
+    h += '<div class="meta"><b>AI เสนอแพทเทิร์น:</b> ' + esc(p.pattern_name || '-') + (p.why ? ' — ' + esc(p.why) : '') + '</div>';
+    (p.cover_concepts || []).forEach((c, i) => h += '<div class="meta">ปกแบบ ' + (i+1) + ': "' + esc(c.headline || '') + '" · ' + esc(c.visual || '') + ' · ' + esc(c.style || '') + '</div>');
+    return h;
+  }
+  return '<div class="meta">ข้อเสนอ AI: ' + esc(JSON.stringify(p).slice(0, 300)) + '</div>';
+}
+window.pick = async (taskId, i) => {
+  const d = await api('task_pick', { task_id: taskId, choice: i });
+  if (d.ok){ toast('เลือกแล้ว — ปลดล็อกขั้นถัดไป'); render(); } else toast('ผิดพลาด: ' + (d.error || ''));
+};
+function renderTeam(){
+  $('#view').innerHTML = '<div class="card"><h2>เพิ่ม/แก้สมาชิกทีม (เฉพาะเจ้าของ)</h2>'
+    + '<div class="note">วิธีหารหัส: ให้สมาชิกเปิด https://hongtonggas.github.io/htg-studio/ แล้วล็อกอิน LINE — จอจะโชว์รหัส U... ให้ส่งมาให้ Ed</div>'
+    + '<label>LINE userId</label><input id="tm_id" placeholder="Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">'
+    + '<label>ชื่อ</label><input id="tm_name" placeholder="เช่น เล็ก / ปุ้ย">'
+    + '<label>บทบาท</label><select id="tm_role"><option value="creator">ครีเอเตอร์ — เลือก/แก้/แนบได้ อนุมัติโพสต์ไม่ได้</option><option value="tech">เทคนิค — ดูระบบ</option><option value="viewer">ผู้ชม — ดูอย่างเดียว</option></select>'
+    + '<div class="acts" style="margin-top:12px"><button class="btn p" id="tm_btn">+ บันทึกสมาชิก</button></div></div>';
+  $('#tm_btn').onclick = async () => {
+    const id = $('#tm_id').value.trim();
+    if (id.length < 10){ toast('รหัส userId ไม่ถูกต้อง'); return; }
+    const d = await api('team_add', { member_id: id, member_name: $('#tm_name').value.trim() || 'สมาชิก', member_role: $('#tm_role').value });
+    if (d.ok){ toast('บันทึกแล้ว — สมาชิกล็อกอินได้ทันที'); } else toast('ผิดพลาด: ' + (d.error || ''));
+  };
 }
 window.act = async (taskId, kind) => {
   let payload = { task_id: taskId };
