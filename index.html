@@ -193,6 +193,12 @@ function renderProposal(t){
     if (p.caption) h += '<div class="meta">แคปชั่น: ' + esc(p.caption) + '</div>';
     return h;
   }
+  if (p.video_url){
+    h += '<div class="meta"><b>วิดีโอตัดต่อเสร็จ (ซับ+CTA ฝังแล้ว):</b></div>'
+      + '<video controls preload="metadata" style="width:100%;max-width:260px;border-radius:12px;border:1px solid var(--line);margin-top:6px" src="' + esc(p.video_url) + '"></video>'
+      + (p.note ? '<div class="meta">' + esc(p.note) + '</div>' : '');
+    return h;
+  }
   if (p.audio_url){
     h += '<div class="meta"><b>เสียงพากย์ที่ AI ผลิต (เสียงโคลน Ed):</b></div>'
       + '<audio controls preload="none" style="width:100%;max-width:420px;margin-top:4px" src="' + esc(p.audio_url) + '"></audio>'
