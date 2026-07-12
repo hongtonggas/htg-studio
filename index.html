@@ -105,8 +105,10 @@ function start(){
   $('#gate').hidden = true; $('#app').hidden = false;
   $('#who').textContent = ME.name + ' · ' + ({owner:'เจ้าของ',creator:'ครีเอเตอร์',tech:'เทคนิค',viewer:'ผู้ชม'}[ME.role] || ME.role);
   $('#teamBtn').hidden = ME.role !== 'owner';
-  document.querySelectorAll('nav [data-v]').forEach(b => b.onclick = () => { CUR = b.dataset.v; CUR_JOB = null; document.querySelectorAll('nav [data-v]').forEach(x=>x.classList.toggle('on', x===b)); render(); });
+  document.querySelectorAll('nav [data-v]').forEach(b => b.onclick = () => { CUR = b.dataset.v; CUR_JOB = null; try { history.replaceState(null, '', location.pathname); } catch(e){} document.querySelectorAll('nav [data-v]').forEach(x=>x.classList.toggle('on', x===b)); render(); });
   $('#rf').onclick = render;
+  const hj = location.hash.match(/#job=(\d+)/);
+  if (hj) CUR_JOB = parseInt(hj[1], 10);
   render();
 }
 async function render(){
@@ -149,7 +151,9 @@ async function renderTasks(){
   h += '</tbody></table></div></div>';
   $('#view').innerHTML = h;
 }
-window.openJob = id => { CUR_JOB = id; render(); };
+window.openJob = id => { CUR_JOB = id; try { history.replaceState(null, '', '#job=' + id); } catch(e){} render(); };
+function hashJob(){ const m = location.hash.match(/#job=(\d+)/); return m ? parseInt(m[1], 10) : null; }
+window.addEventListener('hashchange', () => { const j = hashJob(); if (j !== CUR_JOB) { CUR_JOB = j; render(); } });
 async function renderJob(id){
   const d = await api('job', { job_id: id });
   if (!d.ok) return gateIf(d);
