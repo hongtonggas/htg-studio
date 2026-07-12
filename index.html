@@ -174,8 +174,14 @@ async function renderJob(id){
   (d.tasks||[]).forEach(t => {
     const cls = t.state==='passed'||t.state==='skipped' ? 'done' : (t.state==='locked' ? 'lock' : 'cur');
     h += '<div class="tk ' + cls + '"><div class="h"><span class="n">' + t.step_no + '</span><span class="t">' + esc(t.name) + '</span>' + statePill(t.state) + '</div>';
-    if (t.proposal) h += renderProposal(t);
-    if (t.examples && t.examples.length) h += '<div class="meta">ตัวอย่างแนบ: ' + t.examples.length + ' รายการ</div>';
+    if (t.step_no === 9) h += gateSummary(d.tasks);
+    if (t.decision && t.decision.chosen) h += '<div class="meta" style="color:var(--good)"><b>✅ ที่ทีมเลือก:</b> ' + chosenText(t.decision.chosen) + '</div>';
+    if (t.proposal){
+      const doneState = (t.state === 'passed' || t.state === 'skipped');
+      if (doneState && Array.isArray(t.proposal.options)){ /* เลือกไปแล้ว — โชว์เฉพาะตัวที่เลือกด้านบน ไม่ยัดทั้ง 5 ซ้ำ */ }
+      else h += renderProposal(t);
+    }
+    if (t.examples && t.examples.length) h += '<div class="meta">ตัวอย่างแนบ: ' + t.examples.map(x => x.url ? ('<a href="' + esc(x.url) + '" target="_blank">' + esc(x.note || 'ลิงก์') + '</a>') : esc(x.note || '')).join(' · ') + '</div>';
     if (t.review_notes) h += '<div class="meta">หมายเหตุ: ' + esc(t.review_notes) + '</div>';
     if (['reviewing','waiting_example','proposing'].includes(t.state) && ME.role !== 'viewer'){
       const isOptions = t.proposal && Array.isArray(t.proposal.options);
@@ -193,9 +199,32 @@ async function renderJob(id){
   });
   $('#view').innerHTML = h;
 }
+function chosenText(c){
+  if (c == null) return '-';
+  if (typeof c === 'string') return esc(c);
+  return esc(c.title || c.name || c.pattern_name || JSON.stringify(c).slice(0, 200));
+}
+function gateSummary(tasks){
+  const get = n => { const t = (tasks || []).find(x => x.step_no === n); return (t && t.proposal) ? t.proposal : {}; };
+  const s3 = get(3), s6 = get(6), s7 = get(7), s8 = get(8);
+  let h = '<div class="meta" style="font-weight:700;font-size:13px">📦 สรุปชิ้นงานทั้งหมด — ดูครบแล้วค่อยกดอนุมัติ:</div>';
+  let any = false;
+  if (s8.video_url){ any = true; h += '<video controls preload="metadata" style="width:100%;max-width:240px;border-radius:12px;border:1px solid var(--line);margin-top:6px" src="' + esc(s8.video_url) + '"></video>'; }
+  if (s7.covers && s7.covers.length){ any = true; h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'; s7.covers.forEach(c => { if (c.url) h += '<img src="' + esc(c.url) + '" style="width:110px;border-radius:8px;border:1px solid var(--line)" loading="lazy">'; }); h += '</div>'; }
+  if (s6.audio_url){ any = true; h += '<audio controls preload="none" style="width:100%;max-width:300px;margin-top:6px" src="' + esc(s6.audio_url) + '"></audio>'; }
+  if (s3.caption){ any = true; h += '<div class="meta">แคปชั่นโพสต์: ' + esc(s3.caption) + '</div>'; }
+  else if (s3.script){ any = true; h += '<div class="meta">เนื้อหา: ' + esc(String(s3.script).slice(0, 250)) + '</div>'; }
+  if (!any) h += '<div class="meta">— ยังไม่มีชิ้นงานให้แสดง (ขั้นก่อนหน้ายังไม่ผลิต) —</div>';
+  return h;
+}
 function renderProposal(t){
   const p = t.proposal; if (!p) return '';
   let h = '';
+  if (p.script && !p.lines){
+    h += '<div class="meta"><b>สคริปต์:</b> ' + esc(String(p.script).slice(0, 400)) + '</div>';
+    if (p.image_prompt) h += '<div class="meta">ภาพ: ' + esc(String(p.image_prompt).slice(0, 150)) + '</div>';
+    return h;
+  }
   if (Array.isArray(p.options)){
     h += '<div class="meta"><b>AI เสนอ ' + p.options.length + ' แบบ — เลือก 1 หรือกดส่งแก้เพื่อขอชุดใหม่:</b></div>';
     p.options.forEach((o, i) => {
