@@ -130,7 +130,7 @@ async function render(){
   } catch(e){ v.innerHTML = '<div class="note">ผิดพลาด: ' + e.message + '</div>'; }
 }
 function statePill(s){
-  const m = { locked:['🔒 รอขั้นก่อน',''], waiting_example:['รอทีมแนบของจริง/ตัวอย่าง','warn'], proposing:['AI กำลังเสนอ','gold'], reviewing:['รอตรวจ','crit'], revise:['ส่งแก้ — AI ทำใหม่','warn'], executing:['กำลังผลิต','gold'], passed:['✓ ผ่าน','good'], skipped:['— ข้าม (ภาพนิ่ง)',''] };
+  const m = { locked:['🔒 รอขั้นก่อน',''], waiting_example:['รอทีมแนบของจริง/ตัวอย่าง','warn'], proposing:['AI กำลังเสนอ','gold'], reviewing:['รอตรวจ','crit'], revise:['ส่งแก้ — AI ทำใหม่','warn'], executing:['กำลังผลิต','gold'], passed:['✓ ผ่าน','good'], skipped:['⏭ ข้ามแล้ว',''] };
   const x = m[s] || [s,''];
   return '<span class="pill ' + x[1] + '">' + x[0] + '</span>';
 }
@@ -182,7 +182,10 @@ async function renderJob(id){
         h += '<button class="btn p" onclick="act(' + t.id + ',\'approve\')">✓ ผ่านขั้นนี้</button>';
       if (t.state === 'reviewing' || t.state === 'waiting_example')
         h += '<button class="btn" onclick="act(' + t.id + ',\'revise\')">↩ ส่งแก้</button>';
-      h += '<button class="btn" onclick="act(' + t.id + ',\'example\')">📎 แนบตัวอย่าง/ลิงก์</button></div>';
+      h += '<button class="btn" onclick="act(' + t.id + ',\'example\')">📎 แนบตัวอย่าง/ลิงก์</button>';
+      if (t.step_no !== 9 && t.step_no !== 10)
+        h += '<button class="btn" onclick="act(' + t.id + ',\'skip\')">⏭ ข้ามขั้นนี้</button>';
+      h += '</div>';
     }
     h += '</div>';
   });
@@ -263,8 +266,9 @@ window.act = async (taskId, kind) => {
   let payload = { task_id: taskId };
   if (kind === 'revise'){ const n = prompt('เหตุผลส่งแก้ (AI จะจดเป็นบทเรียน):'); if (n === null) return; payload.note = n; }
   if (kind === 'example'){ const u = prompt('วางลิงก์ตัวอย่าง/ไฟล์ (Drive/fal URL):'); if (!u) return; payload.url = u; payload.note = prompt('อธิบายสั้น ๆ (ไม่ใส่ก็ได้):') || ''; }
+  if (kind === 'skip'){ if (!confirm('ข้ามขั้นนี้แล้วไปขั้นถัดไปเลย?')) return; payload.note = prompt('เหตุผลที่ข้าม (ไม่ใส่ก็ได้ — ช่วยให้ AI เรียนรู้):') || ''; }
   const d = await api('task_' + kind, payload);
-  if (d.ok){ toast(kind==='approve' ? 'ผ่านแล้ว — ปลดล็อกขั้นถัดไป' : kind==='revise' ? 'ส่งแก้แล้ว — บันทึกบทเรียน' : 'แนบแล้ว'); render(); }
+  if (d.ok){ toast(kind==='approve' ? 'ผ่านแล้ว — ปลดล็อกขั้นถัดไป' : kind==='revise' ? 'ส่งแก้แล้ว — บันทึกบทเรียน' : kind==='skip' ? 'ข้ามแล้ว — ไปขั้นถัดไป' : 'แนบแล้ว'); render(); }
   else toast('ผิดพลาด: ' + (d.error||''));
 };
 function renderIdea(){
