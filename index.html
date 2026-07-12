@@ -108,7 +108,9 @@ function start(){
   document.querySelectorAll('nav [data-v]').forEach(b => b.onclick = () => { CUR = b.dataset.v; CUR_JOB = null; try { history.replaceState(null, '', location.pathname); } catch(e){} document.querySelectorAll('nav [data-v]').forEach(x=>x.classList.toggle('on', x===b)); render(); });
   $('#rf').onclick = render;
   const hj = location.hash.match(/#job=(\d+)/);
+  const qj = new URLSearchParams(location.search).get('job');
   if (hj) CUR_JOB = parseInt(hj[1], 10);
+  else if (qj && /^\d+$/.test(qj)) CUR_JOB = parseInt(qj, 10);
   render();
 }
 async function render(){
