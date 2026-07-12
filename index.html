@@ -219,6 +219,8 @@ function gateSummary(tasks){
 }
 function renderProposal(t){
   const p = t.proposal; if (!p) return '';
+  const realKeys = Object.keys(p).filter(k => k !== 'gate_notified_at');
+  if (!realKeys.length) return '';
   let h = '';
   if (p.script && !p.lines){
     h += '<div class="meta"><b>สคริปต์:</b> ' + esc(String(p.script).slice(0, 400)) + '</div>';
