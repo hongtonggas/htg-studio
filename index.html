@@ -69,7 +69,7 @@ a{color:var(--gold)}
 </head>
 <body>
 <div id="gate">กำลังเข้าสู่ระบบ…</div>
-<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v14</div>
+<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v16</div>
 <div id="app" hidden>
 <header>
   <div class="mark">ห</div>
@@ -155,7 +155,7 @@ async function render(){
     if (CUR === 'rules') return renderRules();
     if (CUR === 'patterns') return renderPatterns();
     if (CUR === 'media') return renderMedia();
-    if (CUR === 'metrics') return renderStub('📈 ยอดวิว & ผลงาน', 'หน้านี้จะดึงยอดวิว/คอมเมนต์/เวลาดูเฉลี่ยจากทุกช่องทางอัตโนมัติ (Supermetrics) + มุมมองส่วนตัวต่อคน + AI วิเคราะห์เสนอคอนเทนต์ถัดไป — ต่อท่อใน Build 3 (ตามพิมพ์เขียว mockup) และต้องมีคอนเทนต์โพสต์จริงก่อนถึงมียอดให้ดู');
+    if (CUR === 'metrics') return renderMetrics();
     if (CUR === 'quota') return renderQuota();
   } catch(e){ v.innerHTML = '<div class="note">ผิดพลาด: ' + e.message + '</div>'; }
 }
@@ -302,6 +302,32 @@ async function renderMedia(){
   }
   $('#view').innerHTML = h + '</div>';
 }
+async function renderMetrics(){
+  const d = await api('metrics_list');
+  if (!d.ok) return gateIf(d);
+  const rows = d.metrics || [];
+  if (!rows.length){ $('#view').innerHTML = '<div class="note">ยังไม่มีข้อมูลยอด — ระบบดึงจาก Facebook Insights อัตโนมัติทุกวัน แวะมาดูใหม่พรุ่งนี้เช้า</div>'; return; }
+  const tot = k => rows.reduce((s, m) => s + (Number(m[k]) || 0), 0);
+  let h = '<div class="tiles">' + tile(tot('views').toLocaleString(), 'ยอดวิวรวม (โพสต์ชุดล่าสุด)') + tile(tot('reach').toLocaleString(), 'คนเห็นรวม') + tile(tot('comments_count'), 'คอมเมนต์') + tile(tot('shares'), 'แชร์') + '</div>';
+  h += '<div class="card"><h2>📈 ยอดต่อโพสต์ (สแนปช็อตล่าสุดต่อช่องทาง)</h2><div class="tw"><table><thead><tr><th>โพสต์</th><th>ช่อง</th><th>วิว</th><th>คนเห็น</th><th>ไลก์</th><th>คอมเมนต์</th><th>แชร์</th><th>ดูเฉลี่ย</th></tr></thead><tbody>';
+  rows.forEach(m => {
+    const x = m.extra || {};
+    const title = x.title || m.content_code;
+    const isCF = /^C\d+$/.test(m.content_code);
+    h += '<tr><td style="max-width:340px">' + (x.permalink ? '<a href="' + esc(x.permalink) + '" target="_blank">' + esc(title) + '</a>' : esc(title)) + (isCF ? ' <span class="pill gold">' + esc(m.content_code) + ' จากระบบ</span>' : '') + '</td>'
+      + '<td>' + platPill(m.platform) + '</td>'
+      + '<td class="num">' + (m.views != null ? Number(m.views).toLocaleString() : '—') + '</td>'
+      + '<td class="num">' + (m.reach != null ? Number(m.reach).toLocaleString() : '—') + '</td>'
+      + '<td class="num">' + (x.likes != null ? x.likes : '—') + '</td>'
+      + '<td class="num">' + (m.comments_count != null ? m.comments_count : '—') + '</td>'
+      + '<td class="num">' + (m.shares != null ? m.shares : '—') + '</td>'
+      + '<td class="num">' + (m.avg_watch_sec != null ? m.avg_watch_sec + ' วิ' : '—') + '</td></tr>';
+  });
+  h += '</tbody></table></div>';
+  h += '<div class="note" style="margin-top:10px">ที่มา: Facebook Insights ผ่าน Supermetrics · อัพเดตล่าสุด: ' + (d.last_fetch ? new Date(d.last_fetch).toLocaleString('th-TH') : '-') + ' · TikTok/YouTube จะไหลเข้าเองเมื่อระบบเริ่มโพสต์ · ⚠️ Reels ของเพจยังไม่โผล่ใน Insights รายโพสต์ (ข้อจำกัด API)</div></div>';
+  $('#view').innerHTML = h;
+}
+function platPill(p){ const m = { facebook: ['Facebook','gold'], tiktok: ['TikTok',''], youtube: ['YouTube','crit'] }; const x = m[p] || [p, '']; return '<span class="pill ' + x[1] + '">' + esc(x[0]) + '</span>'; }
 function renderStub(title, text){
   $('#view').innerHTML = '<div class="card"><h2>' + title + '</h2><div class="note">' + text + '</div></div>';
 }
@@ -316,6 +342,13 @@ async function renderQuota(){
     h += '<tr><td>' + esc(q.tool) + '</td><td class="num">' + (q.used || 0) + '</td><td class="num">' + (q.limit_value != null ? q.limit_value : '—') + '</td><td class="num">' + (q.avg_seconds_per_job != null ? q.avg_seconds_per_job + ' วิ' : '—') + '</td></tr>';
   });
   h += '</tbody></table></div><div class="note" style="margin-top:10px">ตัวเลขละเอียด (% + ETA + คำแนะนำเติมเงิน/รอ) จะสมบูรณ์ขึ้นเมื่อสถิติสะสมมากพอ — ระบบเริ่มนับทุกงานแล้ว</div></div>';
+  if ((d.accuracy || []).length){
+    h += '<div class="card"><h2>🎯 ความแม่น AI ต่อขั้น (รายสัปดาห์)</h2><div class="tw"><table><thead><tr><th>สัปดาห์</th><th>ขั้น</th><th>AI เสนอ</th><th>ผ่านโดยไม่แก้</th><th>ความแม่น</th><th>โหมด</th></tr></thead><tbody>';
+    d.accuracy.forEach(a => {
+      h += '<tr><td>' + esc(String(a.week).slice(0, 10)) + '</td><td>ขั้น ' + a.step_no + ' — ' + (STEP_NAMES[a.step_no] || '') + '</td><td class="num">' + (a.proposals || 0) + '</td><td class="num">' + (a.accepted_no_edit || 0) + '</td><td class="num">' + (a.accuracy != null ? Math.round(a.accuracy * 100) + '%' : '—') + '</td><td>' + esc(a.autonomy_level || 'manual') + '</td></tr>';
+    });
+    h += '</tbody></table></div><div class="note" style="margin-top:8px">คันเร่ง AI: แม่น ≥70% ต่อเนื่อง 2 สัปดาห์ = พร้อมเลื่อนเป็นโหมด "เสนอทันทีไม่รอตัวอย่าง" — Ed เป็นคนกดยืนยันการเลื่อนเสมอ</div></div>';
+  }
   $('#view').innerHTML = h;
 }
 async function renderTasks(){
@@ -416,6 +449,7 @@ function renderProposal(t){
     (p.lines || []).forEach(l => h += '<div class="meta">[' + esc(l.t || '') + '] 🎙 ' + esc(l.voice || '') + (l.screen ? ' · 🖼 ' + esc(l.screen) : '') + '</div>');
     if (p.subs) h += '<div class="meta">ซับ ' + p.subs.length + ' ท่อน: ' + esc(p.subs.map(s => s.text).join(' / ').slice(0, 200)) + '</div>';
     if (p.caption) h += '<div class="meta">แคปชั่น: ' + esc(p.caption) + '</div>';
+    if (p.captions){ const c = p.captions; if (c.facebook) h += '<div class="meta">📘 FB: ' + esc(c.facebook) + '</div>'; if (c.tiktok) h += '<div class="meta">🎵 TikTok: ' + esc(c.tiktok) + '</div>'; if (c.youtube) h += '<div class="meta">▶️ YT: ' + esc(((c.youtube.title || '') + ' — ' + (c.youtube.description || '')).slice(0, 220)) + '</div>'; }
     return h;
   }
   if (p.video_url){
