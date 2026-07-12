@@ -83,7 +83,16 @@ async function boot(){
   try { await liff.init({ liffId: LIFF_ID }); } catch(e){ gate('เปิดผ่าน LINE หรือลิงก์ Studio เท่านั้น (' + e.message + ')'); return; }
   try {
     if (TOKEN){ const me = await api('me'); if (me.ok){ ME = me; return start(); } TOKEN = ''; localStorage.removeItem('cfst'); }
-    if (!liff.isLoggedIn()){ liff.login({ redirectUri: location.href }); return; }
+    if (!liff.isLoggedIn()){
+      const g = $('#gate'); g.innerHTML = '';
+      const d = document.createElement('div'); d.textContent = 'ยังไม่ได้เข้าสู่ระบบ LINE บนเบราว์เซอร์นี้';
+      const b = document.createElement('button'); b.textContent = '💬 เข้าสู่ระบบด้วย LINE';
+      b.style.cssText = 'display:block;margin:14px auto 0;padding:11px 26px;border-radius:10px;border:0;background:#06C755;color:#fff;font:inherit;font-weight:700;font-size:15px;cursor:pointer';
+      b.onclick = () => liff.login({ redirectUri: location.href });
+      g.appendChild(d); g.appendChild(b);
+      setTimeout(() => { try { liff.login({ redirectUri: location.href }); } catch(e){} }, 1200);
+      return;
+    }
     const idt = liff.getIDToken();
     if (!idt){ gate('ไม่ได้รับ token จาก LINE — แตะลองใหม่'); return; }
     const r = await api('login', { idToken: idt });
