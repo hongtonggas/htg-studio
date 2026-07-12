@@ -69,7 +69,7 @@ a{color:var(--gold)}
 </head>
 <body>
 <div id="gate">กำลังเข้าสู่ระบบ…</div>
-<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v16</div>
+<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v17</div>
 <div id="app" hidden>
 <header>
   <div class="mark">ห</div>
@@ -303,8 +303,9 @@ async function renderMedia(){
   $('#view').innerHTML = h + '</div>';
 }
 async function renderMetrics(){
-  const d = await api('metrics_list');
+  const [d, dl] = await Promise.all([api('metrics_list'), api('lessons_list')]);
   if (!d.ok) return gateIf(d);
+  const aiLessons = ((dl && dl.lessons) || []).filter(x => x.source === 'metrics').slice(0, 8);
   const rows = d.metrics || [];
   if (!rows.length){ $('#view').innerHTML = '<div class="note">ยังไม่มีข้อมูลยอด — ระบบดึงจาก Facebook Insights อัตโนมัติทุกวัน แวะมาดูใหม่พรุ่งนี้เช้า</div>'; return; }
   const tot = k => rows.reduce((s, m) => s + (Number(m[k]) || 0), 0);
@@ -324,7 +325,14 @@ async function renderMetrics(){
       + '<td class="num">' + (m.avg_watch_sec != null ? m.avg_watch_sec + ' วิ' : '—') + '</td></tr>';
   });
   h += '</tbody></table></div>';
-  h += '<div class="note" style="margin-top:10px">ที่มา: Facebook Insights ผ่าน Supermetrics · อัพเดตล่าสุด: ' + (d.last_fetch ? new Date(d.last_fetch).toLocaleString('th-TH') : '-') + ' · TikTok/YouTube จะไหลเข้าเองเมื่อระบบเริ่มโพสต์ · ⚠️ Reels ของเพจยังไม่โผล่ใน Insights รายโพสต์ (ข้อจำกัด API)</div></div>';
+  h += '<div class="note" style="margin-top:10px">ที่มา: FB Insights + TikTok + YouTube ผ่าน Supermetrics · อัพเดตล่าสุด: ' + (d.last_fetch ? new Date(d.last_fetch).toLocaleString('th-TH') : '-') + ' · ดึงใหม่อัตโนมัติทุกเช้า · ⚠️ Reels ของเพจ FB ยังไม่โผล่ใน Insights รายโพสต์ (ข้อจำกัด API)</div></div>';
+  if (aiLessons.length){
+    h += '<div class="card"><h2>🤖 ข้อเสนอจาก AI (วิเคราะห์จากยอดจริง)</h2>';
+    aiLessons.forEach(x => {
+      h += '<div style="display:flex;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line)"><div style="flex:1"><b style="font-size:13px">' + esc(x.lesson_text) + '</b></div>' + (x.status === 'confirmed' ? '<span class="pill good">✓ ใช้อยู่</span>' : '<span class="pill warn">รอยืนยันในหน้า สอน AI</span>') + '</div>';
+    });
+    h += '<div class="note" style="margin-top:8px">Ed กดยืนยันได้ในหน้า "สอน AI" — ข้อที่ยืนยันจะถูกฝังเข้าสมอง AI ทุกงานถัดไป</div></div>';
+  }
   $('#view').innerHTML = h;
 }
 function platPill(p){ const m = { facebook: ['Facebook','gold'], tiktok: ['TikTok',''], youtube: ['YouTube','crit'] }; const x = m[p] || [p, '']; return '<span class="pill ' + x[1] + '">' + esc(x[0]) + '</span>'; }
@@ -437,10 +445,12 @@ function renderProposal(t){
       if (o.beats) h += '<div class="meta">โครง: ' + esc((o.beats || []).join(' → ')) + '</div>';
       if (o.cta) h += '<div class="meta">CTA: ' + esc(o.cta) + '</div>';
       if (o.hook_type || o.pillar) h += '<div class="meta">' + esc(o.hook_type || '') + (o.pillar ? ' · ' + esc(o.pillar) : '') + '</div>';
-      if (o.why) h += '<div class="meta">💡 ' + esc(o.why) + '</div>';
+      if (o.why) h += '<div class="meta">💡 ' + esc(o.why) + (o.match != null ? ' (ตรง ' + o.match + '%)' : '') + '</div>';
+      if (o.url) h += '<div class="meta">' + (o.kind === 'image' ? '<img src="' + esc(o.url) + '" style="max-width:130px;border-radius:8px;border:1px solid var(--line)" loading="lazy"><br>' : '') + '<a href="' + esc(o.url) + '" target="_blank">🔗 เปิดไฟล์</a></div>';
       if (t.state === 'reviewing' && ME.role !== 'viewer') h += '<div class="acts"><button class="btn p" onclick="pick(' + t.id + ',' + i + ')">✓ เลือกแบบนี้</button></div>';
       h += '</div>';
     });
+    if (p.missing) h += '<div class="meta">📝 AI บอกว่ายังขาด: ' + esc(p.missing) + '</div>';
     return h;
   }
   if (p.hooks || p.lines){
