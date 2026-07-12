@@ -69,7 +69,7 @@ a{color:var(--gold)}
 </head>
 <body>
 <div id="gate">กำลังเข้าสู่ระบบ…</div>
-<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v8</div>
+<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v14</div>
 <div id="app" hidden>
 <header>
   <div class="mark">ห</div>
@@ -81,6 +81,7 @@ a{color:var(--gold)}
   <button data-v="tasks">Task ทั้งหมด</button>
   <button data-v="idea">+ ไอเดียใหม่</button>
   <button data-v="patterns">แพทเทิร์น</button>
+  <button data-v="rules">สอน AI</button>
   <button data-v="media">คลังสื่อ</button>
   <button data-v="metrics">ยอดวิว</button>
   <button data-v="quota">โควตา</button>
@@ -90,10 +91,11 @@ a{color:var(--gold)}
 <main id="view"></main>
 </div>
 <div class="toast" id="toast"></div>
+<input type="file" id="up" hidden accept="image/*,video/*,audio/*">
 <script>
 const LIFF_ID = '2010674866-OUDNkZGp';
 const API = 'https://n8n.hongtonggas.net/webhook/cf-studio-api';
-const STEP_HUMAN = {4:1, 9:1};
+const STEP_NAMES = {1:'หาไอเดีย',2:'บรีฟ',3:'สคริปต์+ซับ',4:'เลือกสื่อ',5:'แพทเทิร์น+ปก',6:'เสียงพากย์',7:'หน้าปก',8:'เรนเดอร์',9:'Gate Ed',10:'โพสต์'};
 let TOKEN = localStorage.cfst || '', ME = null, CUR = 'home', CUR_JOB = null;
 const $ = s => document.querySelector(s);
 function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('s'); setTimeout(()=>t.classList.remove('s'), 2600); }
@@ -150,6 +152,7 @@ async function render(){
     if (CUR === 'tasks') return renderTasks();
     if (CUR === 'idea') return renderIdea();
     if (CUR === 'team') return renderTeam();
+    if (CUR === 'rules') return renderRules();
     if (CUR === 'patterns') return renderPatterns();
     if (CUR === 'media') return renderMedia();
     if (CUR === 'metrics') return renderStub('📈 ยอดวิว & ผลงาน', 'หน้านี้จะดึงยอดวิว/คอมเมนต์/เวลาดูเฉลี่ยจากทุกช่องทางอัตโนมัติ (Supermetrics) + มุมมองส่วนตัวต่อคน + AI วิเคราะห์เสนอคอนเทนต์ถัดไป — ต่อท่อใน Build 3 (ตามพิมพ์เขียว mockup) และต้องมีคอนเทนต์โพสต์จริงก่อนถึงมียอดให้ดู');
@@ -157,7 +160,7 @@ async function render(){
   } catch(e){ v.innerHTML = '<div class="note">ผิดพลาด: ' + e.message + '</div>'; }
 }
 function statePill(s){
-  const m = { locked:['🔒 รอขั้นก่อน',''], waiting_example:['รอทีมแนบของจริง/ตัวอย่าง','warn'], proposing:['AI กำลังเสนอ','gold'], reviewing:['รอตรวจ','crit'], revise:['ส่งแก้ — AI ทำใหม่','warn'], executing:['กำลังผลิต','gold'], passed:['✓ ผ่าน','good'], skipped:['⏭ ข้ามแล้ว',''] };
+  const m = { locked:['🔒 รอขั้นก่อน',''], waiting_example:['รอทีมแนบของจริง/ตัวอย่าง','warn'], proposing:['AI กำลังเสนอ','gold'], reviewing:['รอตรวจ','crit'], revise:['AI ติดขัด — รอทีมสั่งแก้/ข้าม','crit'], executing:['กำลังผลิต','gold'], passed:['✓ ผ่าน','good'], skipped:['⏭ ข้ามแล้ว',''] };
   const x = m[s] || [s,''];
   return '<span class="pill ' + x[1] + '">' + x[0] + '</span>';
 }
@@ -195,23 +198,91 @@ function renderBoard(jobs){
 async function renderPatterns(){
   const d = await api('patterns');
   if (!d.ok) return gateIf(d);
-  let h = '<div class="card"><h2>คลังแพทเทิร์นตัดต่อของทีม</h2><div class="note" style="margin-bottom:12px">เพิ่มแพทเทิร์นใหม่: พิมพ์ #แพทเทิร์น ชื่อ | คำอธิบายสไตล์ ใน LINE OA "Content Factory" — เป้าหมาย 10-20 แบบ (Build 2 จะมีตัวช่วยถอดแพทเทิร์นจากวิดีโอเก่า)</div><div class="pgrid">';
-  (d.patterns || []).forEach(p => {
-    h += '<div class="pat"><h3>' + esc(p.name) + '</h3><div class="meta" style="font-size:12px;color:var(--ink2)">' + esc(p.description || '-') + '</div>';
-    if (p.story_structure) h += '<div class="meta" style="font-size:11.5px;color:var(--ink3)">โครงเรื่อง: ' + esc(p.story_structure) + '</div>';
-    if (p.pacing_sec_per_shot) h += '<div class="meta" style="font-size:11.5px;color:var(--ink3)">จังหวะตัด: ' + p.pacing_sec_per_shot + ' วิ/ช็อต</div>';
-    h += '<div class="meta" style="font-size:11px;color:var(--ink3)">คะแนนผลงาน: ' + (p.perf_score != null ? p.perf_score : 'ยังไม่มีข้อมูล') + '</div></div>';
-  });
+  const all = d.patterns || [];
+  const act = all.filter(p => p.active !== false);
+  const pend = all.filter(p => p.active === false);
+  let h = '<div class="card"><h2>🤖 ถอดแพทเทิร์นจากวิดีโอเก่าที่ยอดดี (เป้า 10-20 แบบ)</h2>'
+    + '<label>ลิงก์วิดีโอเก่า (FB/TikTok/YouTube — ไม่บังคับ)</label><input id="pb_url" placeholder="https://...">'
+    + '<label>เล่าให้ฟัง: คลิปเป็นยังไง ทำไมยอดดี (ยิ่งละเอียด AI ยิ่งถอดแม่น)</label><textarea id="pb_desc" rows="4" placeholder="เช่น เปิดด้วยช่างถามลูกค้าตรง ๆ ตัดเร็วทุก 2 วิ ซับตัวใหญ่กลางจอ จบด้วยราคา+เบอร์โทร คนดูจบเพราะอยากรู้ราคา"></textarea>'
+    + '<label>ตั้งชื่อแพทเทิร์น (เว้นว่าง = ให้ AI ตั้ง)</label><input id="pb_name" placeholder="เช่น เล่าเรื่องช่าง-ตัดเร็ว">'
+    + '<div class="acts" style="margin-top:12px"><button class="btn p" id="pb_btn">🤖 ให้ AI ถอดแพทเทิร์น</button></div>'
+    + '<div class="note" style="margin-top:10px">AI ถอดโครงเรื่อง/จังหวะตัด/สไตล์ซับ/ปก แล้วรอทีมกดยืนยันก่อนใช้จริง · เพิ่มแบบเร็วทาง LINE: #แพทเทิร์น ชื่อ | คำอธิบาย</div></div>';
+  if (pend.length){
+    h += '<div class="card"><h2>⏳ รอทีมยืนยัน (' + pend.length + ')</h2><div class="pgrid">';
+    pend.forEach(p => { h += patCard(p, true); });
+    h += '</div></div>';
+  }
+  h += '<div class="card"><h2>คลังแพทเทิร์นที่ใช้งานอยู่ (' + act.length + ')</h2>';
+  if (act.length){ h += '<div class="pgrid">'; act.forEach(p => { h += patCard(p, false); }); h += '</div>'; }
+  else h += '<div class="note">ยังไม่มีแพทเทิร์น</div>';
   h += '</div>';
-  if (!(d.patterns || []).length) h += '<div class="note">ยังไม่มีแพทเทิร์น</div>';
-  $('#view').innerHTML = h + '</div>';
+  $('#view').innerHTML = h;
+  $('#pb_btn').onclick = async () => {
+    const desc = $('#pb_desc').value.trim();
+    if (desc.length < 10){ toast('เล่ารายละเอียดคลิปก่อน (อย่างน้อย 1-2 ประโยค)'); return; }
+    $('#pb_btn').disabled = true; $('#pb_btn').textContent = '🤖 AI กำลังถอดแพทเทิร์น… (~ครึ่งนาที)';
+    const d2 = await api('pattern_bootstrap', { url: $('#pb_url').value.trim(), detail: desc, pattern_name: $('#pb_name').value.trim() });
+    if (d2.ok){ toast('ถอดเสร็จ: "' + ((d2.pattern && d2.pattern.name) || '') + '" — กดยืนยันเพื่อใช้จริง'); render(); }
+    else { toast('ผิดพลาด: ' + (d2.error || '')); $('#pb_btn').disabled = false; $('#pb_btn').textContent = '🤖 ให้ AI ถอดแพทเทิร์น'; }
+  };
 }
+function patCard(p, pending){
+  let h = '<div class="pat"' + (pending ? ' style="border-color:var(--warn)"' : '') + '><h3>' + esc(p.name) + (pending ? ' <span class="pill warn">รอยืนยัน</span>' : '') + '</h3><div class="meta" style="font-size:12px;color:var(--ink2)">' + esc(p.description || '-') + '</div>';
+  if (p.story_structure) h += '<div class="meta" style="font-size:11.5px;color:var(--ink3)">โครงเรื่อง: ' + esc(p.story_structure) + '</div>';
+  if (p.pacing_sec_per_shot) h += '<div class="meta" style="font-size:11.5px;color:var(--ink3)">จังหวะตัด: ' + p.pacing_sec_per_shot + ' วิ/ช็อต</div>';
+  if (p.music_ref) h += '<div class="meta" style="font-size:11.5px;color:var(--ink3)">เพลง: ' + esc(p.music_ref) + '</div>';
+  if (!pending) h += '<div class="meta" style="font-size:11px;color:var(--ink3)">คะแนนผลงาน: ' + (p.perf_score != null ? p.perf_score : 'ยังไม่มีข้อมูล') + '</div>';
+  if (pending && ME.role !== 'viewer') h += '<div class="acts"><button class="btn p" onclick="patConfirm(' + p.id + ')">✓ ยืนยันใช้จริง</button><button class="btn d" onclick="patDel(' + p.id + ')">🗑 ลบ</button></div>';
+  return h + '</div>';
+}
+window.patConfirm = async id => {
+  const nm = prompt('ตั้งชื่อแพทเทิร์น (เว้นว่าง = ใช้ชื่อเดิม):') || '';
+  const d = await api('pattern_confirm', { pattern_id: id, pattern_name: nm.trim() });
+  if (d.ok){ toast('ยืนยันแล้ว — AI ใช้แพทเทิร์นนี้ได้ทันที'); render(); } else toast('ผิดพลาด: ' + (d.error || ''));
+};
+window.patDel = async id => {
+  if (!confirm('ลบแพทเทิร์นนี้ทิ้ง?')) return;
+  const d = await api('pattern_del', { pattern_id: id });
+  if (d.ok){ toast('ลบแล้ว'); render(); } else toast('ผิดพลาด: ' + (d.error || ''));
+};
+async function renderRules(){
+  const d = await api('rules');
+  if (!d.ok) return gateIf(d);
+  const rules = d.rules || [];
+  let h = '<div class="card"><h2>📏 สอน AI ถาวร — กติกาที่ทีมสั่งไว้ (มีผลกับงานถัดไปทันที)</h2>'
+    + '<label>กติกาใหม่</label><textarea id="rl_text" rows="3" placeholder="เช่น ห้ามใช้คำว่า ถูกที่สุด / ทุกคลิปต้องจบด้วยเบอร์โทรสาขา / ซับห้ามทับโลโก้"></textarea>'
+    + '<label>ใช้กับขั้นไหน</label><select id="rl_step"><option value="0">ทุกขั้น</option>' + [1,2,3,4,5,6,7,8,9,10].map(n => '<option value="' + n + '">ขั้น ' + n + ' — ' + STEP_NAMES[n] + '</option>').join('') + '</select>'
+    + '<div class="acts" style="margin-top:12px"><button class="btn p" id="rl_btn">+ บันทึกกติกา</button></div>'
+    + '<div class="note" style="margin-top:10px">เพิ่มทาง LINE ได้ด้วย: พิมพ์ #กติกา [เลขขั้น] ข้อความ ใน OA "Content Factory"</div></div>';
+  h += '<div class="card"><h2>กติกาที่ใช้อยู่ (' + rules.length + ')</h2>';
+  if (!rules.length) h += '<div class="note">ยังไม่มีกติกา — กติกาข้อแรกของทีมรออยู่</div>';
+  else {
+    h += '<div class="tw"><table><thead><tr><th>#</th><th>กติกา</th><th>ขั้น</th><th></th></tr></thead><tbody>';
+    rules.forEach(r => {
+      h += '<tr><td>' + r.id + '</td><td>' + esc(r.rule_text) + '</td><td>' + (r.step_no ? ('ขั้น ' + r.step_no) : 'ทุกขั้น') + '</td><td>' + (ME.role !== 'viewer' ? '<button class="btn d" onclick="ruleDel(' + r.id + ')">ยกเลิก</button>' : '') + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+  h += '</div>';
+  $('#view').innerHTML = h;
+  $('#rl_btn').onclick = async () => {
+    const text = $('#rl_text').value.trim();
+    if (text.length < 4){ toast('พิมพ์กติกาก่อน'); return; }
+    const d2 = await api('rule_add', { note: text, step_no: parseInt($('#rl_step').value, 10) });
+    if (d2.ok){ toast('บันทึกแล้ว — AI ใช้กติกานี้กับงานถัดไปทันที'); render(); } else toast('ผิดพลาด: ' + (d2.error || ''));
+  };
+}
+window.ruleDel = async id => {
+  if (!confirm('ยกเลิกกติกานี้?')) return;
+  const d = await api('rule_del', { rule_id: id });
+  if (d.ok){ toast('ยกเลิกแล้ว'); render(); } else toast('ผิดพลาด: ' + (d.error || ''));
+};
 async function renderMedia(){
   const d = await api('media');
   if (!d.ok) return gateIf(d);
   let h = '<div class="card"><h2>คลังสื่อของทีม</h2><div class="note" style="margin-bottom:12px">ส่งของเข้าคลัง: ส่งรูป/คลิปในแชท LINE OA "Content Factory" แล้วพิมพ์ #หมวด ชื่อหมวด · ของ 4K พิมพ์ #คลัง หมวด ลิงก์Drive — หมวดมาตรฐาน: ' + (d.categories || []).map(esc).join(' / ') + '</div>';
   const items = d.media || [];
-  if (!items.length){ h += '<div class="note">📭 คลังยังว่าง — เริ่มส่งฟุตเทจแรกผ่าน LINE ได้เลย (เปิดระบบรับผ่านแชทใน Build 2)</div>'; }
+  if (!items.length){ h += '<div class="note">📭 คลังยังว่าง — ส่งรูป/คลิปเข้าแชท LINE OA "Content Factory" ได้เลย ระบบรับอัตโนมัติ</div>'; }
   else {
     h += '<div class="mgrid">';
     items.forEach(m => {
@@ -257,14 +328,15 @@ async function renderJob(id){
     }
     if (t.examples && t.examples.length) h += '<div class="meta">ตัวอย่างแนบ: ' + t.examples.map(x => x.url ? ('<a href="' + esc(x.url) + '" target="_blank">' + esc(x.note || 'ลิงก์') + '</a>') : esc(x.note || '')).join(' · ') + '</div>';
     if (t.review_notes) h += '<div class="meta">หมายเหตุ: ' + esc(t.review_notes) + '</div>';
-    if (['reviewing','waiting_example','proposing'].includes(t.state) && ME.role !== 'viewer'){
+    if (['reviewing','waiting_example','proposing','revise'].includes(t.state) && ME.role !== 'viewer'){
       const isOptions = t.proposal && Array.isArray(t.proposal.options);
       h += '<div class="acts">';
       if ((t.state === 'reviewing' || t.state === 'waiting_example') && !isOptions)
         h += '<button class="btn p" onclick="act(' + t.id + ',\'approve\')">✓ ผ่านขั้นนี้</button>';
-      if (t.state === 'reviewing' || t.state === 'waiting_example')
-        h += '<button class="btn" onclick="act(' + t.id + ',\'revise\')">↩ ส่งแก้</button>';
-      h += '<button class="btn" onclick="act(' + t.id + ',\'example\')">📎 แนบตัวอย่าง/ลิงก์</button>';
+      if (t.state === 'reviewing' || t.state === 'waiting_example' || t.state === 'revise')
+        h += '<button class="btn" onclick="act(' + t.id + ',\'revise\')">↩ ส่งแก้' + (t.state === 'revise' ? ' (สั่ง AI ลองใหม่)' : '') + '</button>';
+      h += '<button class="btn" onclick="act(' + t.id + ',\'example\')">📎 แนบลิงก์</button>';
+      h += '<button class="btn" onclick="upload(' + t.id + ')">⬆ อัปโหลดไฟล์</button>';
       if (t.step_no !== 9 && t.step_no !== 10)
         h += '<button class="btn" onclick="act(' + t.id + ',\'skip\')">⏭ ข้ามขั้นนี้</button>';
       h += '</div>';
@@ -383,14 +455,45 @@ function renderIdea(){
     + '<label>หัวเรื่อง/สิ่งที่อยากได้</label><input id="it" placeholder="เช่น ลูกค้าถามบ่อย: ติดแก๊สแล้วประกันรถขาดไหม">'
     + '<label>รายละเอียดเพิ่ม (ไม่บังคับ — ยิ่งละเอียด AI ยิ่งเสนอตรง)</label><textarea id="idt" rows="4" placeholder="โทน/แพลตฟอร์ม/ตัวอย่างที่ชอบ/ของที่มีในคลัง"></textarea>'
     + '<div class="acts" style="margin-top:12px"><button class="btn p" id="ib">+ สร้างใบงาน</button></div>'
-    + '<div class="note" style="margin-top:10px">สร้างแล้วใบงานจะเริ่มที่ขั้น 1 สถานะ "AI กำลังเสนอ" — AI จะเสนอ 5 หัวข้อ/มุมให้เลือกในใบงาน</div></div>';
+    + '<div class="note" style="margin-top:10px">สร้างแล้วใบงานจะเริ่มที่ขั้น 1 สถานะ "AI กำลังเสนอ" — AI จะเสนอ 5 หัวข้อ/มุมให้เลือกในใบงาน</div></div>'
+    + '<div class="card"><h2>🔴 งานด่วน — มีคลิป/ภาพพร้อมแล้ว ข้ามไปเริ่มขั้น 5</h2>'
+    + '<label>หัวเรื่อง</label><input id="ug_title" placeholder="เช่น โปรล้างระบบแก๊สเดือนนี้">'
+    + '<label>บรีฟย่อ / แคปชั่นที่อยากได้</label><textarea id="ug_brief" rows="3" placeholder="ใช้เป็นแคปชั่นตอนโพสต์ด้วย — ใส่ประเด็นหลัก+CTA"></textarea>'
+    + '<label>ไฟล์งาน</label><div class="acts"><button class="btn" id="ug_up">⬆ อัปโหลดไฟล์จากเครื่อง</button></div>'
+    + '<input id="ug_url" placeholder="หรือวางลิงก์ไฟล์ (Drive/fal URL)" style="margin-top:8px">'
+    + '<div class="acts" style="margin-top:12px"><button class="btn p" id="ug_btn">🔴 สร้างงานด่วน (เริ่มขั้น 5)</button></div>'
+    + '<div class="note" style="margin-top:10px">งานด่วนข้ามขั้น 1-4 อัตโนมัติ (ไฟล์ที่แนบ = สื่อขั้น 4) — แต่ตรวจซับก่อนเรนเดอร์ และ Ed ตรวจคำเคลมที่ขั้น 9 เหมือนเดิมทุกชิ้น</div></div>';
   $('#ib').onclick = async () => {
     const title = $('#it').value.trim(); if (!title){ toast('ใส่หัวเรื่องก่อน'); return; }
     const d = await api('idea', { title, detail: $('#idt').value.trim() });
     if (d.ok){ toast('สร้างใบงาน #' + d.job_id + ' แล้ว'); CUR_JOB = d.job_id; render(); }
     else toast('ผิดพลาด: ' + (d.error||''));
   };
+  $('#ug_up').onclick = () => { UP_MODE = 'urgent'; UP_TASK = null; $('#up').click(); };
+  $('#ug_btn').onclick = async () => {
+    const title = $('#ug_title').value.trim(); if (title.length < 3){ toast('ใส่หัวเรื่องก่อน'); return; }
+    const brief = $('#ug_brief').value.trim(); if (!brief){ toast('ใส่บรีฟย่อก่อน (ใช้เป็นแคปชั่น)'); return; }
+    const d = await api('urgent', { title, detail: brief, url: $('#ug_url').value.trim() });
+    if (d.ok){ toast('สร้างงานด่วน #' + d.job_id + ' แล้ว — AI กำลังเสนอแพทเทิร์น'); CUR_JOB = d.job_id; render(); }
+    else toast('ผิดพลาด: ' + (d.error||''));
+  };
 }
+let UP_TASK = null, UP_MODE = 'example';
+window.upload = taskId => { UP_TASK = taskId; UP_MODE = 'example'; $('#up').click(); };
+$('#up').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  if (f.size > 500 * 1024 * 1024){ toast('ไฟล์ใหญ่เกิน 500MB'); return; }
+  toast('⬆ กำลังอัปโหลด ' + f.name + ' …');
+  try {
+    const init = await api('upload_init', { file_name: f.name, content_type: f.type || 'application/octet-stream' });
+    if (!init.ok){ toast('ขอที่อัปโหลดไม่สำเร็จ: ' + (init.error || '')); return; }
+    const put = await fetch(init.upload_url, { method: 'PUT', headers: { 'Content-Type': f.type || 'application/octet-stream' }, body: f });
+    if (!put.ok){ toast('อัปโหลดไม่สำเร็จ (' + put.status + ')'); return; }
+    if (UP_MODE === 'urgent'){ const u = $('#ug_url'); if (u) u.value = init.file_url; toast('อัปโหลดเสร็จ ✓ แนบไฟล์แล้ว — กดสร้างงานด่วนได้เลย'); }
+    else { const d = await api('task_example', { task_id: UP_TASK, url: init.file_url, note: f.name }); if (d.ok){ toast('อัปโหลด + แนบเสร็จ ✓'); render(); } else toast('แนบไม่สำเร็จ: ' + (d.error || '')); }
+  } catch (err){ toast('อัปโหลดล้มเหลว: ' + err.message); }
+};
 function tile(n, l){ return '<div class="tile"><b>' + n + '</b><span>' + l + '</span></div>'; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function gateIf(d){ if (d.error === 'auth'){ TOKEN=''; localStorage.removeItem('cfst'); location.reload(); } else $('#view').innerHTML = '<div class="note">ผิดพลาด: ' + esc(d.error||'') + '</div>'; }
