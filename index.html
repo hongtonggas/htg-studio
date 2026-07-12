@@ -156,7 +156,7 @@ async function render(){
     if (CUR === 'patterns') return renderPatterns();
     if (CUR === 'media') return renderMedia();
     if (CUR === 'metrics') return renderStub('📈 ยอดวิว & ผลงาน', 'หน้านี้จะดึงยอดวิว/คอมเมนต์/เวลาดูเฉลี่ยจากทุกช่องทางอัตโนมัติ (Supermetrics) + มุมมองส่วนตัวต่อคน + AI วิเคราะห์เสนอคอนเทนต์ถัดไป — ต่อท่อใน Build 3 (ตามพิมพ์เขียว mockup) และต้องมีคอนเทนต์โพสต์จริงก่อนถึงมียอดให้ดู');
-    if (CUR === 'quota') return renderStub('⚙ เครื่องมือ & โควตา', 'หน้านี้จะโชว์ % โควตาแต่ละเครื่องมือ ความเร็วเฉลี่ย เวลาโดยประมาณของงานค้าง และคำแนะนำควรรอ/เติมเงิน — ต่อท่อใน Build 3 (โครงตารางในฐานข้อมูลพร้อมแล้ว)');
+    if (CUR === 'quota') return renderQuota();
   } catch(e){ v.innerHTML = '<div class="note">ผิดพลาด: ' + e.message + '</div>'; }
 }
 function statePill(s){
@@ -246,9 +246,10 @@ window.patDel = async id => {
   if (d.ok){ toast('ลบแล้ว'); render(); } else toast('ผิดพลาด: ' + (d.error || ''));
 };
 async function renderRules(){
-  const d = await api('rules');
+  const [d, dl] = await Promise.all([api('rules'), api('lessons_list')]);
   if (!d.ok) return gateIf(d);
   const rules = d.rules || [];
+  const lessons = (dl && dl.lessons) || [];
   let h = '<div class="card"><h2>📏 สอน AI ถาวร — กติกาที่ทีมสั่งไว้ (มีผลกับงานถัดไปทันที)</h2>'
     + '<label>กติกาใหม่</label><textarea id="rl_text" rows="3" placeholder="เช่น ห้ามใช้คำว่า ถูกที่สุด / ทุกคลิปต้องจบด้วยเบอร์โทรสาขา / ซับห้ามทับโลโก้"></textarea>'
     + '<label>ใช้กับขั้นไหน</label><select id="rl_step"><option value="0">ทุกขั้น</option>' + [1,2,3,4,5,6,7,8,9,10].map(n => '<option value="' + n + '">ขั้น ' + n + ' — ' + STEP_NAMES[n] + '</option>').join('') + '</select>'
@@ -264,6 +265,13 @@ async function renderRules(){
     h += '</tbody></table></div>';
   }
   h += '</div>';
+  h += '<div class="card"><h2>📝 บทเรียนที่ AI จดเองจากการแก้ของทีม</h2><div class="note" style="margin-bottom:10px">ทุกครั้งที่ทีม "ส่งแก้" พร้อมเหตุผล AI จะจดเป็นบทเรียน — Ed กด ✓ ยืนยัน แล้วมันถูกฝังเข้าสมอง AI ทุกงานถัดไปอัตโนมัติ (ระบบเสนอ-คนเคาะ)</div>';
+  if (!lessons.length) h += '<div class="note">ยังไม่มีบทเรียน</div>';
+  lessons.forEach(x => {
+    h += '<div style="display:flex;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line)"><div style="flex:1"><b style="font-size:13px">' + esc(x.lesson_text) + '</b><div style="font-size:11px;color:var(--ink3)">' + esc(x.source) + (x.step_no ? ' · ขั้น ' + x.step_no : '') + '</div></div>'
+      + (x.status === 'confirmed' ? '<span class="pill good">✓ ใช้อยู่</span>' : (ME.role === 'owner' ? '<button class="btn p" style="padding:4px 12px;font-size:12px" onclick="lessonOk(' + x.id + ')">✓ ยืนยันใช้</button>' : '<span class="pill warn">รอ Ed</span>')) + '</div>';
+  });
+  h += '</div>';
   $('#view').innerHTML = h;
   $('#rl_btn').onclick = async () => {
     const text = $('#rl_text').value.trim();
@@ -272,6 +280,7 @@ async function renderRules(){
     if (d2.ok){ toast('บันทึกแล้ว — AI ใช้กติกานี้กับงานถัดไปทันที'); render(); } else toast('ผิดพลาด: ' + (d2.error || ''));
   };
 }
+window.lessonOk = async id => { const d = await api('lesson_confirm', { lesson_id: id }); if (d.ok){ toast('ยืนยันแล้ว — ฝังเข้าสมอง AI'); render(); } else toast('ผิดพลาด: ' + (d.error || '')); };
 window.ruleDel = async id => {
   if (!confirm('ยกเลิกกติกานี้?')) return;
   const d = await api('rule_del', { rule_id: id });
@@ -295,6 +304,19 @@ async function renderMedia(){
 }
 function renderStub(title, text){
   $('#view').innerHTML = '<div class="card"><h2>' + title + '</h2><div class="note">' + text + '</div></div>';
+}
+async function renderQuota(){
+  const d = await api('quota');
+  if (!d.ok) return gateIf(d);
+  let h = '<div class="tiles">'
+    + tile(d.ai_queue, 'งานในคิว AI') + tile(d.human_queue, 'งานรอทีม')
+    + tile('฿' + Math.round(d.cost_month || 0), 'ค่า AI เดือนนี้ (ประมาณ)') + tile('฿' + (d.budget || '-'), 'งบต่อเดือน (รอ Ed เคาะ)') + '</div>';
+  h += '<div class="card"><h2>โควตาเครื่องมือเดือนนี้</h2><div class="tw"><table><thead><tr><th>เครื่องมือ</th><th>ใช้ไป</th><th>เพดาน</th><th>เฉลี่ย/งาน</th></tr></thead><tbody>';
+  (d.quota || []).forEach(q => {
+    h += '<tr><td>' + esc(q.tool) + '</td><td class="num">' + (q.used || 0) + '</td><td class="num">' + (q.limit_value != null ? q.limit_value : '—') + '</td><td class="num">' + (q.avg_seconds_per_job != null ? q.avg_seconds_per_job + ' วิ' : '—') + '</td></tr>';
+  });
+  h += '</tbody></table></div><div class="note" style="margin-top:10px">ตัวเลขละเอียด (% + ETA + คำแนะนำเติมเงิน/รอ) จะสมบูรณ์ขึ้นเมื่อสถิติสะสมมากพอ — ระบบเริ่มนับทุกงานแล้ว</div></div>';
+  $('#view').innerHTML = h;
 }
 async function renderTasks(){
   const d = await api('tasks');
