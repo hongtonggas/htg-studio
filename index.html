@@ -48,6 +48,23 @@ label{font-size:12px;color:var(--ink2);display:block;margin:8px 0 4px}
 .toast.s{opacity:1}
 a{color:var(--gold)}
 .jl{cursor:pointer}
+.bw{overflow-x:auto;padding-bottom:4px}
+.board{display:grid;grid-template-columns:repeat(5,minmax(185px,1fr));gap:9px;min-width:960px}
+.col{background:var(--raised);border:1px solid var(--line);border-radius:11px;padding:9px;display:grid;gap:7px;align-content:start}
+.colh{display:flex;align-items:baseline;gap:6px;padding:0 2px}
+.colh .st{font-size:10px;letter-spacing:.08em;color:var(--gold);font-weight:700}
+.colh b{font-size:12.5px}.colh .cnt{margin-inline-start:auto;font-size:11px;color:var(--ink3)}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 10px;display:grid;gap:4px;cursor:pointer}
+.kcard .kt{font-size:12.5px;font-weight:600;line-height:1.35}
+.kcard .km{font-size:10.5px;color:var(--ink3)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px}
+.pat{border:1.5px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;display:grid;gap:7px}
+.pat h3{margin:0;font-size:14px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.mth{border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.mth .ph{aspect-ratio:4/3;display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,#57708c,#333f52);color:#FFF8E8}
+.mth img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.mth .mi{padding:6px 9px;font-size:11.5px}
 </style>
 </head>
 <body>
@@ -63,6 +80,10 @@ a{color:var(--gold)}
   <button data-v="home" class="on">ภาพรวม</button>
   <button data-v="tasks">Task ทั้งหมด</button>
   <button data-v="idea">+ ไอเดียใหม่</button>
+  <button data-v="patterns">แพทเทิร์น</button>
+  <button data-v="media">คลังสื่อ</button>
+  <button data-v="metrics">ยอดวิว</button>
+  <button data-v="quota">โควตา</button>
   <button data-v="team" id="teamBtn" hidden>ทีม</button>
   <button id="rf">↻ รีเฟรช</button>
 </nav>
@@ -129,6 +150,10 @@ async function render(){
     if (CUR === 'tasks') return renderTasks();
     if (CUR === 'idea') return renderIdea();
     if (CUR === 'team') return renderTeam();
+    if (CUR === 'patterns') return renderPatterns();
+    if (CUR === 'media') return renderMedia();
+    if (CUR === 'metrics') return renderStub('📈 ยอดวิว & ผลงาน', 'หน้านี้จะดึงยอดวิว/คอมเมนต์/เวลาดูเฉลี่ยจากทุกช่องทางอัตโนมัติ (Supermetrics) + มุมมองส่วนตัวต่อคน + AI วิเคราะห์เสนอคอนเทนต์ถัดไป — ต่อท่อใน Build 3 (ตามพิมพ์เขียว mockup) และต้องมีคอนเทนต์โพสต์จริงก่อนถึงมียอดให้ดู');
+    if (CUR === 'quota') return renderStub('⚙ เครื่องมือ & โควตา', 'หน้านี้จะโชว์ % โควตาแต่ละเครื่องมือ ความเร็วเฉลี่ย เวลาโดยประมาณของงานค้าง และคำแนะนำควรรอ/เติมเงิน — ต่อท่อใน Build 3 (โครงตารางในฐานข้อมูลพร้อมแล้ว)');
   } catch(e){ v.innerHTML = '<div class="note">ผิดพลาด: ' + e.message + '</div>'; }
 }
 function statePill(s){
@@ -148,8 +173,57 @@ async function renderHome(){
     h += '<tr class="jl" onclick="openJob(' + j.id + ')"><td>' + j.id + '</td><td>' + esc(j.title) + (j.urgent ? ' <span class="pill crit">ด่วน</span>' : '') + '</td><td>' + (j.job_type==='still_image'?'ภาพนิ่ง':'วิดีโอ') + '</td><td class="pill gold">' + j.current_step + '/10</td><td>' + statePill(j.cur_state) + '</td></tr>';
   });
   h += '</tbody></table></div></div>';
+  h += renderBoard(d.jobs || []);
   h += '<div class="note">กติกาเหล็ก: AI ห้ามทำขั้นถัดไปเองจนกว่าทีมตรวจผ่าน · ขั้นมีค่าใช้จ่ายล็อกจนกด "ผ่าน"</div>';
   $('#view').innerHTML = h;
+}
+function renderBoard(jobs){
+  const ST = [ { n: 'ไอเดีย & บรีฟ', s: [1,2,3] }, { n: 'เลือกสื่อ', s: [4] }, { n: 'แพทเทิร์น', s: [5] }, { n: 'ผลิต + พรีวิว', s: [6,7,8] }, { n: 'อนุมัติ & โพสต์', s: [9,10] } ];
+  let h = '<div class="card"><h2>สายพาน 5 สถานี</h2><div class="bw"><div class="board">';
+  ST.forEach((st, i) => {
+    const inCol = jobs.filter(j => st.s.includes(j.current_step));
+    h += '<div class="col"><div class="colh"><span class="st">สถานี ' + i + '</span><b>' + st.n + '</b><span class="cnt">' + inCol.length + '</span></div>';
+    if (!inCol.length) h += '<div class="km" style="text-align:center;color:var(--ink3);font-size:11px;padding:8px 0">— ว่าง —</div>';
+    inCol.forEach(j => {
+      h += '<div class="kcard" onclick="openJob(' + j.id + ')"><div class="kt">#' + j.id + ' ' + esc(String(j.title).slice(0, 60)) + '</div><div class="km">ขั้น ' + j.current_step + '/10 · ' + (j.job_type === 'still_image' ? 'ภาพนิ่ง' : 'วิดีโอ') + (j.urgent ? ' · 🔴 ด่วน' : '') + '</div></div>';
+    });
+    h += '</div>';
+  });
+  h += '</div></div></div>';
+  return h;
+}
+async function renderPatterns(){
+  const d = await api('patterns');
+  if (!d.ok) return gateIf(d);
+  let h = '<div class="card"><h2>คลังแพทเทิร์นตัดต่อของทีม</h2><div class="note" style="margin-bottom:12px">เพิ่มแพทเทิร์นใหม่: พิมพ์ #แพทเทิร์น ชื่อ | คำอธิบายสไตล์ ใน LINE OA "Content Factory" — เป้าหมาย 10-20 แบบ (Build 2 จะมีตัวช่วยถอดแพทเทิร์นจากวิดีโอเก่า)</div><div class="pgrid">';
+  (d.patterns || []).forEach(p => {
+    h += '<div class="pat"><h3>' + esc(p.name) + '</h3><div class="meta" style="font-size:12px;color:var(--ink2)">' + esc(p.description || '-') + '</div>';
+    if (p.story_structure) h += '<div class="meta" style="font-size:11.5px;color:var(--ink3)">โครงเรื่อง: ' + esc(p.story_structure) + '</div>';
+    if (p.pacing_sec_per_shot) h += '<div class="meta" style="font-size:11.5px;color:var(--ink3)">จังหวะตัด: ' + p.pacing_sec_per_shot + ' วิ/ช็อต</div>';
+    h += '<div class="meta" style="font-size:11px;color:var(--ink3)">คะแนนผลงาน: ' + (p.perf_score != null ? p.perf_score : 'ยังไม่มีข้อมูล') + '</div></div>';
+  });
+  h += '</div>';
+  if (!(d.patterns || []).length) h += '<div class="note">ยังไม่มีแพทเทิร์น</div>';
+  $('#view').innerHTML = h + '</div>';
+}
+async function renderMedia(){
+  const d = await api('media');
+  if (!d.ok) return gateIf(d);
+  let h = '<div class="card"><h2>คลังสื่อของทีม</h2><div class="note" style="margin-bottom:12px">ส่งของเข้าคลัง: ส่งรูป/คลิปในแชท LINE OA "Content Factory" แล้วพิมพ์ #หมวด ชื่อหมวด · ของ 4K พิมพ์ #คลัง หมวด ลิงก์Drive — หมวดมาตรฐาน: ' + (d.categories || []).map(esc).join(' / ') + '</div>';
+  const items = d.media || [];
+  if (!items.length){ h += '<div class="note">📭 คลังยังว่าง — เริ่มส่งฟุตเทจแรกผ่าน LINE ได้เลย (เปิดระบบรับผ่านแชทใน Build 2)</div>'; }
+  else {
+    h += '<div class="mgrid">';
+    items.forEach(m => {
+      const img = m.proxy_url || ((m.kind === 'image') ? m.url : null);
+      h += '<div class="mth">' + (img ? '<img src="' + esc(img) + '" loading="lazy">' : '<div class="ph">' + (m.kind === 'video' ? '🎬' : '📄') + '</div>') + '<div class="mi"><b>' + esc(m.category || 'ไม่มีหมวด') + '</b><div style="color:var(--ink3)">' + esc((m.note || '').slice(0, 40)) + (m.quality === 'line' ? ' · LINE บีบ' : '') + ' · ใช้ ' + (m.used_count || 0) + '</div></div></div>';
+    });
+    h += '</div>';
+  }
+  $('#view').innerHTML = h + '</div>';
+}
+function renderStub(title, text){
+  $('#view').innerHTML = '<div class="card"><h2>' + title + '</h2><div class="note">' + text + '</div></div>';
 }
 async function renderTasks(){
   const d = await api('tasks');
