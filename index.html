@@ -50,6 +50,7 @@ a{color:var(--gold)}
 </head>
 <body>
 <div id="gate">กำลังเข้าสู่ระบบ…</div>
+<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v8</div>
 <div id="app" hidden>
 <header>
   <div class="mark">ห</div>
@@ -80,7 +81,12 @@ async function api(action, data){
   return r.json();
 }
 async function boot(){
-  try { await liff.init({ liffId: LIFF_ID }); } catch(e){ gate('เปิดผ่าน LINE หรือลิงก์ Studio เท่านั้น (' + e.message + ')'); return; }
+  const initP = (typeof liff === 'undefined')
+    ? Promise.reject(new Error('LIFF SDK โหลดไม่ขึ้น (เน็ต/ตัวบล็อกโฆษณา?)'))
+    : liff.init({ liffId: LIFF_ID });
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('LINE ตอบช้าเกิน 8 วิ')), 8000));
+  try { await Promise.race([initP, timeout]); }
+  catch(e){ gate('เชื่อมต่อ LINE ไม่สำเร็จ: ' + e.message); return; }
   try {
     if (TOKEN){ const me = await api('me'); if (me.ok){ ME = me; return start(); } TOKEN = ''; localStorage.removeItem('cfst'); }
     if (!liff.isLoggedIn()){
