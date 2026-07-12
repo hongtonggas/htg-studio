@@ -10,6 +10,8 @@
 @media(prefers-color-scheme:dark){:root{--page:#141210;--surface:#1F1C17;--raised:#282419;--ink:#F2EDDF;--ink2:#C8C1AE;--ink3:#948D7C;--line:#332F26;--gold:#E5B84B;--goldbg:#33290F;--goldst:#E5B84B;--good:#3DBB3D;--warn:#E5A62E;--crit:#E36868}}
 *{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font-family:"Leelawadee UI","Segoe UI","Noto Sans Thai",system-ui,sans-serif;font-size:15px;line-height:1.55}
 #gate{display:grid;place-items:center;min-height:100vh;padding:24px;text-align:center;color:var(--ink2)}
+#gate[hidden]{display:none!important}
+#app[hidden]{display:none!important}
 header{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--goldst),#7A5A10);color:#FFF8E8;font-weight:700;display:grid;place-items:center;font-size:17px}
 .bname{font-weight:700;font-size:14px;line-height:1.2}.bsub{font-size:11px;color:var(--ink3)}
