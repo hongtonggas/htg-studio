@@ -193,6 +193,20 @@ function renderProposal(t){
     if (p.caption) h += '<div class="meta">แคปชั่น: ' + esc(p.caption) + '</div>';
     return h;
   }
+  if (p.audio_url){
+    h += '<div class="meta"><b>เสียงพากย์ที่ AI ผลิต (เสียงโคลน Ed):</b></div>'
+      + '<audio controls preload="none" style="width:100%;max-width:420px;margin-top:4px" src="' + esc(p.audio_url) + '"></audio>'
+      + (p.note ? '<div class="meta">' + esc(p.note) + '</div>' : '');
+    return h;
+  }
+  if (p.covers){
+    h += '<div class="meta"><b>หน้าปกคู่ A/B ที่ AI ผลิต (ตัวหนังสือไทยจะวางเป็น layer ตอนตัดต่อ):</b></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">';
+    (p.covers || []).forEach(c => {
+      h += '<div style="max-width:180px"><img src="' + esc(c.url) + '" style="width:100%;border-radius:10px;border:1px solid var(--line)" loading="lazy"><div class="meta">แบบ ' + esc(c.variant || '') + (c.headline ? ' · "' + esc(c.headline) + '"' : '') + '</div></div>';
+    });
+    h += '</div>' + (p.note ? '<div class="meta">' + esc(p.note) + '</div>' : '');
+    return h;
+  }
   if (p.cover_concepts){
     h += '<div class="meta"><b>AI เสนอแพทเทิร์น:</b> ' + esc(p.pattern_name || '-') + (p.why ? ' — ' + esc(p.why) : '') + '</div>';
     (p.cover_concepts || []).forEach((c, i) => h += '<div class="meta">ปกแบบ ' + (i+1) + ': "' + esc(c.headline || '') + '" · ' + esc(c.visual || '') + ' · ' + esc(c.style || '') + '</div>');
