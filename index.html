@@ -69,7 +69,7 @@ a{color:var(--gold)}
 </head>
 <body>
 <div id="gate">กำลังเข้าสู่ระบบ…</div>
-<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v18</div>
+<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v19</div>
 <div id="app" hidden>
 <header>
   <div class="mark">ห</div>
@@ -541,7 +541,12 @@ window.act = async (taskId, kind) => {
   else toast('ผิดพลาด: ' + (d.error||''));
 };
 function renderIdea(){
-  $('#view').innerHTML = '<div class="card"><h2>หย่อนไอเดีย → AI เสนอก่อน ไม่ผลิตจนกว่าทีมเลือก</h2>'
+  $('#view').innerHTML = '<div class="card"><h2>💬 AI โปรดิวเซอร์ — เล่าไอเดียให้ฟังก่อนได้</h2>'
+    + '<div id="pc_log" style="display:grid;gap:8px;max-height:300px;overflow-y:auto"></div>'
+    + '<label>พิมพ์คุย (ความจำต่อเนื่องกับแชทใน LINE OA)</label><textarea id="pc_in" rows="2" placeholder="เช่น อยากทำคลิปหน้าฝน รถติดแก๊สต้องระวังอะไร มีไอเดียไหม"></textarea>'
+    + '<div class="acts" style="margin-top:8px"><button class="btn p" id="pc_btn">ส่งให้ AI</button></div>'
+    + '<div class="note" style="margin-top:8px">คุยจนตกผลึกแล้วค่อยสร้างใบงานในกล่องข้างล่าง — AI รู้จักกติกา/แพทเทิร์น/ความรู้ verified ของทีมทั้งหมด</div></div>'
+    + '<div class="card"><h2>หย่อนไอเดีย → AI เสนอก่อน ไม่ผลิตจนกว่าทีมเลือก</h2>'
     + '<label>หัวเรื่อง/สิ่งที่อยากได้</label><input id="it" placeholder="เช่น ลูกค้าถามบ่อย: ติดแก๊สแล้วประกันรถขาดไหม">'
     + '<label>รายละเอียดเพิ่ม (ไม่บังคับ — ยิ่งละเอียด AI ยิ่งเสนอตรง)</label><textarea id="idt" rows="4" placeholder="โทน/แพลตฟอร์ม/ตัวอย่างที่ชอบ/ของที่มีในคลัง"></textarea>'
     + '<div class="acts" style="margin-top:12px"><button class="btn p" id="ib">+ สร้างใบงาน</button></div>'
@@ -558,6 +563,14 @@ function renderIdea(){
     const d = await api('idea', { title, detail: $('#idt').value.trim() });
     if (d.ok){ toast('สร้างใบงาน #' + d.job_id + ' แล้ว'); CUR_JOB = d.job_id; render(); }
     else toast('ผิดพลาด: ' + (d.error||''));
+  };
+  const pcAdd = (who, text) => { const d = document.createElement('div'); d.style.cssText = who === 'ai' ? 'background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;white-space:pre-wrap' : 'background:var(--goldbg);border-radius:10px;padding:8px 12px;font-size:13px;text-align:right;white-space:pre-wrap'; d.textContent = text; $('#pc_log').appendChild(d); $('#pc_log').scrollTop = 99999; return d; };
+  $('#pc_btn').onclick = async () => {
+    const t = $('#pc_in').value.trim(); if (!t){ toast('พิมพ์ข้อความก่อน'); return; }
+    $('#pc_in').value = ''; pcAdd('me', t);
+    const wait = pcAdd('ai', '… กำลังคิด (10-30 วิ) …');
+    try { const d = await api('producer_chat', { detail: t }); wait.textContent = d.ok ? d.answer : ('ผิดพลาด: ' + (d.error || '')); }
+    catch (e){ wait.textContent = 'เชื่อมต่อไม่ได้: ' + e.message; }
   };
   $('#ug_up').onclick = () => { UP_MODE = 'urgent'; UP_TASK = null; $('#up').click(); };
   $('#ug_btn').onclick = async () => {
