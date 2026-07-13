@@ -69,7 +69,7 @@ a{color:var(--gold)}
 </head>
 <body>
 <div id="gate">กำลังเข้าสู่ระบบ…</div>
-<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v17</div>
+<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:#8B8578;z-index:5">Studio v18</div>
 <div id="app" hidden>
 <header>
   <div class="mark">ห</div>
@@ -493,13 +493,32 @@ window.pick = async (taskId, i) => {
   const d = await api('task_pick', { task_id: taskId, choice: i });
   if (d.ok){ toast('เลือกแล้ว — ปลดล็อกขั้นถัดไป'); render(); } else toast('ผิดพลาด: ' + (d.error || ''));
 };
-function renderTeam(){
-  $('#view').innerHTML = '<div class="card"><h2>เพิ่ม/แก้สมาชิกทีม (เฉพาะเจ้าของ)</h2>'
+async function renderTeam(){
+  const da = await api('autonomy_status');
+  const steps = (da && da.steps) || [];
+  const PH = { manual: ['เฟส 1 — ทีมตรวจทุกจังหวะ', ''], suggest: ['เฟส 2 — AI เสนอทันทีไม่รอตัวอย่าง', 'gold'], auto_spot_check: ['เฟส 3 — AI ทำเอง ทีมสุ่มตรวจ', 'warn'], advisor: ['เฟส 4 — ระบบเสนอ ทีมเคาะ', 'crit'] };
+  let h = '<div class="card"><h2>เพิ่ม/แก้สมาชิกทีม (เฉพาะเจ้าของ)</h2>'
     + '<div class="note">วิธีหารหัส: ให้สมาชิกเปิด https://hongtonggas.github.io/htg-studio/ แล้วล็อกอิน LINE — จอจะโชว์รหัส U... ให้ส่งมาให้ Ed</div>'
     + '<label>LINE userId</label><input id="tm_id" placeholder="Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">'
     + '<label>ชื่อ</label><input id="tm_name" placeholder="เช่น เล็ก / ปุ้ย">'
     + '<label>บทบาท</label><select id="tm_role"><option value="creator">ครีเอเตอร์ — เลือก/แก้/แนบได้ อนุมัติโพสต์ไม่ได้</option><option value="tech">เทคนิค — ดูระบบ</option><option value="viewer">ผู้ชม — ดูอย่างเดียว</option></select>'
     + '<div class="acts" style="margin-top:12px"><button class="btn p" id="tm_btn">+ บันทึกสมาชิก</button></div></div>';
+  h += '<div class="card"><h2>🚀 คันเร่ง AI — ปล่อยมือทีละขั้น</h2>';
+  if (!steps.length) h += '<div class="note">ยังไม่มีสถิติความแม่น — ระบบเริ่มนับเมื่องานผ่านมือทีม</div>';
+  else {
+    h += '<div class="tw"><table><thead><tr><th>ขั้น</th><th>แม่นล่าสุด</th><th>สัปดาห์ก่อน</th><th>โหมดปัจจุบัน</th><th></th></tr></thead><tbody>';
+    steps.forEach(s => {
+      const ph = PH[s.level] || [s.level, ''];
+      h += '<tr><td>ขั้น ' + s.step_no + ' — ' + (STEP_NAMES[s.step_no] || '') + '</td>'
+        + '<td class="num">' + (s.acc_latest != null ? Math.round(s.acc_latest * 100) + '%' : '—') + '</td>'
+        + '<td class="num">' + (s.acc_prev != null ? Math.round(s.acc_prev * 100) + '%' : '—') + '</td>'
+        + '<td><span class="pill ' + ph[1] + '">' + esc(ph[0]) + '</span></td>'
+        + '<td>' + (ME.role === 'owner' ? (s.level === 'manual' ? (s.eligible_suggest ? '<button class="btn p" onclick="autoSet(' + s.step_no + ',\'suggest\')">⬆ เลื่อนเฟส 2</button>' : '<span class="pill">รอแม่น ≥70% สองสัปดาห์</span>') : '<button class="btn d" onclick="autoSet(' + s.step_no + ',\'manual\')">⬇ กลับเฟส 1</button>') : '') + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+  h += '<div class="note" style="margin-top:10px">โรดแมป 4 เฟส: ① ทีมตรวจทุกจังหวะ → ② AI เสนอทันที (แม่น ≥70% สองสัปดาห์ติด) → ③ AI ทำเอง ทีมสุ่มตรวจ 20% (≥90% + ยอดไม่ตก 4 สัปดาห์) → ④ ระบบเสนอแผนเอง ทีมรับฟังและเคาะ · Ed กดยืนยันการเลื่อนเสมอ · แม่น <60% ระบบลดกลับเฟส 1 อัตโนมัติ · ขั้น 9 (Gate) Ed ถือตลอดไป ไม่มีปล่อยมือ</div></div>';
+  $('#view').innerHTML = h;
   $('#tm_btn').onclick = async () => {
     const id = $('#tm_id').value.trim();
     if (id.length < 10){ toast('รหัส userId ไม่ถูกต้อง'); return; }
@@ -507,6 +526,11 @@ function renderTeam(){
     if (d.ok){ toast('บันทึกแล้ว — สมาชิกล็อกอินได้ทันที'); } else toast('ผิดพลาด: ' + (d.error || ''));
   };
 }
+window.autoSet = async (step, level) => {
+  if (!confirm(level === 'suggest' ? 'เลื่อนขั้นนี้เป็นเฟส 2 — AI เสนอทันทีไม่รอตัวอย่าง?' : 'ลดขั้นนี้กลับเฟส 1 — ทีมตรวจทุกจังหวะ?')) return;
+  const d = await api('autonomy_set', { step_no: step, note: level });
+  if (d.ok){ toast('ปรับโหมดแล้ว'); render(); } else toast('ผิดพลาด: ' + (d.error || ''));
+};
 window.act = async (taskId, kind) => {
   let payload = { task_id: taskId };
   if (kind === 'revise'){ const n = prompt('เหตุผลส่งแก้ (AI จะจดเป็นบทเรียน):'); if (n === null) return; payload.note = n; }
