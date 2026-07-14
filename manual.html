@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>คู่มือ HTG Content Studio</title>
+<style>
+:root{--page:#F7F4ED;--surface:#FFF;--raised:#FDFBF6;--ink:#211D14;--ink2:#5C564A;--ink3:#8B8578;--line:#E5E0D3;--gold:#9A7118;--goldbg:#F4EBD7;--goldst:#B8891F;--good:#0B7A0B;--warn:#B97A00;--crit:#C23636}
+@media(prefers-color-scheme:dark){:root{--page:#141210;--surface:#1F1C17;--raised:#282419;--ink:#F2EDDF;--ink2:#C8C1AE;--ink3:#948D7C;--line:#332F26;--gold:#E5B84B;--goldbg:#33290F;--goldst:#E5B84B;--good:#3DBB3D;--warn:#E5A62E;--crit:#E36868}}
+*{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font-family:"Leelawadee UI","Segoe UI","Noto Sans Thai",system-ui,sans-serif;font-size:15.5px;line-height:1.65}
+header{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:11px;align-items:center}
+.mark{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--goldst),#7A5A10);color:#FFF8E8;font-weight:700;display:grid;place-items:center;font-size:18px}
+.bname{font-weight:700;font-size:15px;line-height:1.2}.bsub{font-size:11.5px;color:var(--ink3)}
+main{padding:16px;max-width:860px;margin:0 auto;display:grid;gap:16px}
+.toc{display:flex;gap:7px;flex-wrap:wrap}
+.toc a{text-decoration:none;font-size:12.5px;font-weight:600;color:var(--gold);background:var(--goldbg);border-radius:99px;padding:5px 13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+h2{font-size:18px;margin:0 0 12px;display:flex;gap:9px;align-items:center}
+h2 .no{width:30px;height:30px;border-radius:9px;background:var(--goldst);color:#FFF8E8;display:grid;place-items:center;font-size:15px;flex-shrink:0}
+h3{font-size:15px;margin:16px 0 8px;color:var(--gold)}
+p{margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{text-align:start;font-size:11.5px;color:var(--ink3);padding:7px 9px;border-bottom:1px solid var(--line)}
+td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;border-radius:99px;padding:2px 10px;border:1px solid var(--line);color:var(--ink2);background:var(--raised);white-space:nowrap}
+.pill.gold{color:var(--gold);background:var(--goldbg);border-color:transparent}.pill.good{color:var(--good)}.pill.warn{color:var(--warn)}.pill.crit{color:var(--crit)}
+.note{font-size:13px;color:var(--ink2);background:var(--raised);border:1px dashed var(--line);border-radius:11px;padding:10px 14px;margin:10px 0}
+.warnbox{font-size:13.5px;background:var(--goldbg);border-radius:11px;padding:12px 15px;margin:10px 0;border:1px solid var(--goldst)}
+.step{display:flex;gap:12px;margin:12px 0;align-items:flex-start}
+.step .sn{width:26px;height:26px;border-radius:50%;background:var(--goldst);color:#FFF8E8;display:grid;place-items:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:2px}
+kbd{background:var(--raised);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-family:inherit;font-size:13px;font-weight:600}
+.dia{width:100%;overflow-x:auto;margin:12px 0}
+.dia svg{min-width:640px;width:100%;height:auto;display:block}
+a{color:var(--gold)}
+.big{font-size:16px;font-weight:700}
+footer{text-align:center;font-size:11.5px;color:var(--ink3);padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <div class="mark">ห</div>
+  <div><div class="bname">คู่มือ HTG Content Studio</div><div class="bsub">ฉบับสมบูรณ์สำหรับทีม · อ่านจบใช้เป็นทั้งระบบ</div></div>
+</header>
+<main>
+
+<div class="toc">
+  <a href="#s1">① ระบบคืออะไร</a><a href="#s2">② ใบงาน 10 ขั้น</a><a href="#s3">③ เริ่มใช้ครั้งแรก</a><a href="#s4">④ ใช้เว็บ</a><a href="#s5">⑤ ใช้ LINE</a><a href="#s6">⑥ คลังสื่อ</a><a href="#s7">⑦ AI เรียนรู้</a><a href="#s8">⑧ สิทธิ์+กติกา</a><a href="#s9">⑨ แก้ปัญหา</a>
+</div>
+
+<!-- ================= 1 ================= -->
+<div class="card" id="s1">
+<h2><span class="no">①</span> ระบบนี้คืออะไร</h2>
+<p><span class="big">HTG Content Studio = โรงงานผลิตคอนเทนต์ที่มี AI เป็นเด็กฝึกงาน และพวกเราเป็นหัวหน้า</span></p>
+<p>AI ช่วยทำงานหนักเกือบหมด — คิดหัวข้อ เขียนสคริปต์ ทำเสียงพากย์ ทำปก ตัดต่อ ใส่ซับ — แต่<b>ห้ามทำอะไรเองโดยพลการ</b> ทุกขั้นมันต้อง "เสนอ" ให้เราดูก่อน เรากด ✓ มันถึงไปต่อได้ และทุกครั้งที่เราแก้งาน มันจะจดเป็นบทเรียน ยิ่งใช้นาน ยิ่งรู้ใจทีม</p>
+
+<div class="dia"><svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" font-family="Leelawadee UI,Segoe UI,Noto Sans Thai,sans-serif">
+  <!-- team -->
+  <rect x="10" y="120" width="130" height="100" rx="14" fill="var(--goldbg)" stroke="var(--goldst)" stroke-width="2"/>
+  <text x="75" y="155" text-anchor="middle" font-size="26">👥</text>
+  <text x="75" y="182" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">ทีมเรา</text>
+  <text x="75" y="202" text-anchor="middle" font-size="11" fill="var(--ink2)">Ed · เล็ก · ปุ้ย</text>
+  <!-- channels -->
+  <rect x="185" y="60" width="150" height="90" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+  <text x="260" y="95" text-anchor="middle" font-size="20">🌐</text>
+  <text x="260" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">เว็บ Studio</text>
+  <text x="260" y="136" text-anchor="middle" font-size="10.5" fill="var(--ink3)">ศูนย์บัญชาการ</text>
+  <rect x="185" y="185" width="150" height="90" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+  <text x="260" y="220" text-anchor="middle" font-size="20">💬</text>
+  <text x="260" y="243" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">LINE OA</text>
+  <text x="260" y="261" text-anchor="middle" font-size="10.5" fill="var(--ink3)">ส่งของ + คุยกับ AI</text>
+  <!-- AI -->
+  <rect x="390" y="35" width="170" height="270" rx="14" fill="var(--raised)" stroke="var(--goldst)" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="475" y="63" text-anchor="middle" font-size="13" font-weight="700" fill="var(--gold)">🤖 ทีม AI (อัตโนมัติ)</text>
+  <text x="475" y="92" text-anchor="middle" font-size="11.5" fill="var(--ink2)">Claude — คิด/เขียน/คุย</text>
+  <text x="475" y="117" text-anchor="middle" font-size="11.5" fill="var(--ink2)">ElevenLabs — เสียงพากย์</text>
+  <text x="475" y="142" text-anchor="middle" font-size="11.5" fill="var(--ink2)">fal.ai — ภาพปก/วิดีโอ</text>
+  <text x="475" y="167" text-anchor="middle" font-size="11.5" fill="var(--ink2)">Creatomate — ตัดต่อ+ซับ</text>
+  <text x="475" y="192" text-anchor="middle" font-size="11.5" fill="var(--ink2)">Supermetrics — ดึงยอด</text>
+  <text x="475" y="217" text-anchor="middle" font-size="11.5" fill="var(--ink2)">Google Drive — คลังไฟล์</text>
+  <text x="475" y="242" text-anchor="middle" font-size="11.5" fill="var(--ink2)">n8n + Supabase — สายพาน</text>
+  <text x="475" y="285" text-anchor="middle" font-size="10.5" fill="var(--crit)" font-weight="700">ทีมไม่ต้องแตะส่วนนี้เลย</text>
+  <!-- platforms -->
+  <rect x="615" y="95" width="135" height="150" rx="14" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+  <text x="682" y="127" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">Facebook</text>
+  <text x="682" y="152" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">TikTok</text>
+  <text x="682" y="177" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">YouTube</text>
+  <text x="682" y="212" text-anchor="middle" font-size="18">🔒</text>
+  <text x="682" y="232" text-anchor="middle" font-size="9.5" fill="var(--crit)">โพสต์ล็อกไว้ รอ Ed ปลด</text>
+  <!-- arrows -->
+  <g stroke="var(--ink3)" stroke-width="2" fill="none" marker-end="url(#ar)">
+    <path d="M142 150 L183 110"/><path d="M142 190 L183 225"/>
+    <path d="M337 105 L388 120"/><path d="M337 230 L388 210"/>
+    <path d="M562 165 L613 165"/>
+  </g>
+  <path d="M680 250 C 640 330, 300 330, 265 280" stroke="var(--good)" stroke-width="2" fill="none" stroke-dasharray="5 4" marker-end="url(#arg)"/>
+  <text x="470" y="330" text-anchor="middle" font-size="11" fill="var(--good)">ยอดวิวจริงไหลกลับมาให้ทีมดู + AI เรียนรู้ ทุกเช้า</text>
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--ink3)"/></marker>
+    <marker id="arg" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--good)"/></marker>
+  </defs>
+</svg></div>
+
+<div class="note">👥 ทีมใช้แค่ <b>2 ช่องทางซ้ายมือ</b> (เว็บ + LINE) — กล่องกลางและขวาทำงานเองทั้งหมด</div>
+</div>
+
+<!-- ================= 2 ================= -->
+<div class="card" id="s2">
+<h2><span class="no">②</span> ใบงาน 10 ขั้น — หัวใจของระบบ</h2>
+<p>คอนเทนต์ 1 ชิ้น = "ใบงาน" 1 ใบ เหมือนใบสั่งงานในอู่ เดินทีละขั้นจนจบที่โพสต์:</p>
+
+<div class="dia"><svg viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg" font-family="Leelawadee UI,Segoe UI,Noto Sans Thai,sans-serif">
+  <g font-size="10.5" text-anchor="middle">
+    <!-- row 1: steps 1-5 -->
+    <g>
+      <rect x="8"  y="20" width="134" height="62" rx="10" fill="var(--goldbg)" stroke="var(--goldst)" stroke-width="1.5"/>
+      <text x="75" y="43" font-weight="700" fill="var(--ink)" font-size="11.5">1. หาไอเดีย</text><text x="75" y="60" fill="var(--ink2)">AI เสนอ 5 → เลือก 1</text>
+      <rect x="160" y="20" width="134" height="62" rx="10" fill="var(--goldbg)" stroke="var(--goldst)" stroke-width="1.5"/>
+      <text x="227" y="43" font-weight="700" fill="var(--ink)" font-size="11.5">2. บรีฟ</text><text x="227" y="60" fill="var(--ink2)">AI เสนอ 5 มุม → เลือก</text>
+      <rect x="312" y="20" width="134" height="62" rx="10" fill="var(--goldbg)" stroke="var(--goldst)" stroke-width="1.5"/>
+      <text x="379" y="43" font-weight="700" fill="var(--ink)" font-size="11.5">3. สคริปต์+ซับ</text><text x="379" y="60" fill="var(--ink2)">AI เขียน → ทีมตรวจ</text>
+      <rect x="464" y="20" width="134" height="62" rx="10" fill="var(--goldbg)" stroke="var(--goldst)" stroke-width="1.5"/>
+      <text x="531" y="43" font-weight="700" fill="var(--ink)" font-size="11.5">4. เลือกสื่อ</text><text x="531" y="60" fill="var(--ink2)">AI เสนอจากคลัง</text>
+      <rect x="616" y="20" width="134" height="62" rx="10" fill="var(--goldbg)" stroke="var(--goldst)" stroke-width="1.5"/>
+      <text x="683" y="43" font-weight="700" fill="var(--ink)" font-size="11.5">5. แพทเทิร์น+ปก</text><text x="683" y="60" fill="var(--ink2)">AI เสนอ → ทีมเคาะ</text>
+    </g>
+    <!-- row 2: steps 6-10 -->
+    <g>
+      <rect x="8"  y="120" width="134" height="62" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="75" y="143" font-weight="700" fill="var(--ink)" font-size="11.5">6. เสียงพากย์ 💰</text><text x="75" y="160" fill="var(--ink2)">AI ทำ → ทีมฟัง</text>
+      <rect x="160" y="120" width="134" height="62" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="227" y="143" font-weight="700" fill="var(--ink)" font-size="11.5">7. ปกคู่ A/B 💰</text><text x="227" y="160" fill="var(--ink2)">AI ทำ 2 แบบ → ทีมดู</text>
+      <rect x="312" y="120" width="134" height="62" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="379" y="143" font-weight="700" fill="var(--ink)" font-size="11.5">8. ตัดต่อ 💰</text><text x="379" y="160" fill="var(--ink2)">คลิปเต็ม → ทีมดู</text>
+      <rect x="464" y="120" width="134" height="62" rx="10" fill="var(--surface)" stroke="var(--crit)" stroke-width="2"/>
+      <text x="531" y="143" font-weight="700" fill="var(--crit)" font-size="11.5">9. Gate 🚦</text><text x="531" y="160" fill="var(--ink2)">Ed/เล็ก ตรวจสุดท้าย</text>
+      <rect x="616" y="120" width="134" height="62" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="683" y="143" font-weight="700" fill="var(--ink)" font-size="11.5">10. โพสต์ 🔒</text><text x="683" y="160" fill="var(--ink2)">FB/TikTok/YT + เก็บยอด</text>
+    </g>
+    <g stroke="var(--ink3)" stroke-width="1.7" fill="none">
+      <path d="M142 51 L158 51"/><path d="M294 51 L310 51"/><path d="M446 51 L462 51"/><path d="M598 51 L614 51"/>
+      <path d="M735 85 C 745 100, 30 92, 60 118"/>
+      <path d="M142 151 L158 151"/><path d="M294 151 L310 151"/><path d="M446 151 L462 151"/><path d="M598 151 L614 151"/>
+    </g>
+  </g>
+</svg></div>
+
+<div class="warnbox">💰 = ขั้นที่มีค่าใช้จ่าย — <b>จะไม่เริ่มจนกว่าทีมกดผ่านขั้นก่อนหน้า</b> เงินไม่รั่วเพราะเราคุมทุกจุด · งานภาพนิ่งข้ามขั้น 6/8 อัตโนมัติ · "งานด่วน" (มีคลิปอยู่แล้ว) กระโดดเข้าขั้น 5 เลย</div>
+</div>
+
+<!-- ================= 3 ================= -->
+<div class="card" id="s3">
+<h2><span class="no">③</span> เริ่มใช้ครั้งแรก (5 นาที ทำครั้งเดียว)</h2>
+<div class="step"><div class="sn">1</div><div>กดลิงก์จากมือถือ: <b>https://liff.line.me/2010674866-OUDNkZGp</b> → ล็อกอินด้วย LINE ตัวเอง → กดยินยอม</div></div>
+<div class="step"><div class="sn">2</div><div>ถ้าขึ้น <i>"ยังไม่ถูกเพิ่มในทีม"</i> พร้อมรหัส U ยาว ๆ → copy ส่งให้ Ed/เล็ก เพิ่มชื่อ (เมนู "ทีม") → เปิดลิงก์ใหม่ = เข้าได้</div></div>
+<div class="step"><div class="sn">3</div><div>แอดเพื่อน LINE OA <kbd>@926qshkt</kbd> ("Content Factory" — OA ภายในทีม คนละตัวกับ OA ลูกค้า) → ทดสอบพิมพ์ <kbd>#</kbd> ส่งไป ระบบจะตอบรายการคำสั่งกลับมา</div></div>
+<div class="step"><div class="sn">4</div><div>เก็บลิงก์เว็บไว้ใน Keep/บุ๊กมาร์ก — เปิดจากคอมก็ได้ที่ <b>hongtonggas.github.io/htg-studio</b></div></div>
+</div>
+
+<!-- ================= 4 ================= -->
+<div class="card" id="s4">
+<h2><span class="no">④</span> ใช้เว็บ Studio — งานหลักรายวัน</h2>
+<h3>เข้ามาแล้วดูอะไรก่อน</h3>
+<p>หน้า "ภาพรวม" → ดูช่อง <span class="pill crit">รอทีมตรวจ</span> ก่อนเสมอ ถ้ามีตัวเลข = มีงานรอเรา → แตะใบงานเพื่อเปิด</p>
+<h3>อ่านป้ายสถานะให้ออก</h3>
+<div class="tw"><table>
+<tr><th>ป้าย</th><th>แปลว่า</th><th>เราทำอะไร</th></tr>
+<tr><td><span class="pill">🔒 รอขั้นก่อน</span></td><td>ยังไม่ถึงคิว</td><td>—</td></tr>
+<tr><td><span class="pill gold">AI กำลังเสนอ</span></td><td>AI กำลังทำ</td><td>รอ 2-5 นาที</td></tr>
+<tr><td><span class="pill crit">รอตรวจ</span></td><td><b>AI เสร็จแล้ว รอเรา!</b></td><td>เปิดดู → กดตัดสิน</td></tr>
+<tr><td><span class="pill warn">รอทีมแนบของจริง</span></td><td>รอรูป/คลิปจากเรา</td><td>แนบไฟล์ หรือข้าม</td></tr>
+<tr><td><span class="pill crit">AI ติดขัด — รอทีมสั่ง</span></td><td>AI พลาดหลายรอบ</td><td>กด "ส่งแก้" ให้ลองใหม่ หรือข้าม</td></tr>
+<tr><td><span class="pill good">✓ ผ่าน</span></td><td>จบขั้นนั้นแล้ว</td><td>—</td></tr>
+</table></div>
+<h3>ปุ่มทั้งหมดในใบงาน</h3>
+<div class="tw"><table>
+<tr><th>ปุ่ม</th><th>กดแล้วเกิดอะไร</th></tr>
+<tr><td><b>✓ ผ่านขั้นนี้</b></td><td>รับงาน → ระบบปลดขั้นถัดไปให้ AI ทำต่อทันที</td></tr>
+<tr><td><b>✓ เลือกแบบนี้</b></td><td>กรณี AI เสนอหลายแบบ (5 หัวข้อ/5 บรีฟ) — เลือกอันที่ชอบสุดอันเดียว</td></tr>
+<tr><td><b>↩ ส่งแก้</b></td><td>ให้ AI ทำใหม่ — <b style="color:var(--crit)">ต้องพิมพ์เหตุผลเสมอ</b> เช่น "โทนทางการไป เอาภาษาพูด" เพราะเหตุผลถูกจดเป็นบทเรียนถาวร AI จะไม่พลาดซ้ำ</td></tr>
+<tr><td><b>📎 แนบลิงก์ / ⬆ อัปโหลดไฟล์</b></td><td>ส่งตัวอย่างหรือไฟล์จริงประกอบขั้นนั้น (อัปจากมือถือได้เลย)</td></tr>
+<tr><td><b>⏭ ข้ามขั้นนี้</b></td><td>ขั้นนั้นไม่จำเป็นกับงานนี้ (ขั้น 9-10 ข้ามไม่ได้)</td></tr>
+</table></div>
+<h3>สร้างคอนเทนต์ใหม่ (เมนู "+ ไอเดียใหม่") — 3 ทาง</h3>
+<p>① <b>คุยกับ AI ก่อน</b> (กล่องแชทบนสุด — แนะนำ): เล่าไอเดียแบบคุยกับเพื่อน AI ช่วยขยาย/ถาม/เสนอมุม แล้วค่อยสร้างใบงาน · ② <b>สร้างเลย</b>: กรอกหัวเรื่อง+รายละเอียด กดสร้าง AI เสนอ 5 หัวข้อใน 2-4 นาที · ③ <b>งานด่วน 🔴</b>: มีคลิปพร้อมแล้ว — กรอก+อัปไฟล์ ระบบข้ามขั้น 1-4 ให้เลย</p>
+</div>
+
+<!-- ================= 5 ================= -->
+<div class="card" id="s5">
+<h2><span class="no">⑤</span> ใช้ LINE OA — ช่องทางเร็วจากมือถือ</h2>
+
+<div class="dia"><svg viewBox="0 0 760 150" xmlns="http://www.w3.org/2000/svg" font-family="Leelawadee UI,Segoe UI,Noto Sans Thai,sans-serif">
+  <g font-size="11" text-anchor="middle">
+    <rect x="10" y="35" width="150" height="80" rx="12" fill="var(--goldbg)" stroke="var(--goldst)" stroke-width="1.5"/>
+    <text x="85" y="65" font-size="20">📱</text><text x="85" y="88" font-weight="700" fill="var(--ink)">ถ่ายรูป/คลิปหน้างาน</text><text x="85" y="104" fill="var(--ink2)" font-size="10">ส่งเข้าแชท OA ตรง ๆ</text>
+    <rect x="210" y="35" width="150" height="80" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="285" y="65" font-size="15" font-weight="700" fill="var(--gold)">#หมวด ...</text><text x="285" y="88" fill="var(--ink2)">พิมพ์ตามทันที</text><text x="285" y="104" fill="var(--ink2)" font-size="10">บอกหมวด + แท็ก</text>
+    <rect x="410" y="35" width="150" height="80" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="485" y="65" font-size="20">🗄️</text><text x="485" y="88" font-weight="700" fill="var(--ink)">เข้าคลังสื่อทันที</text><text x="485" y="104" fill="var(--ink2)" font-size="10">ระบบตอบ "เก็บแล้ว #..."</text>
+    <rect x="610" y="35" width="140" height="80" rx="12" fill="var(--raised)" stroke="var(--goldst)" stroke-width="1.5" stroke-dasharray="5 3"/>
+    <text x="680" y="65" font-size="20">🤖</text><text x="680" y="88" font-weight="700" fill="var(--ink)">AI หยิบไปใช้เอง</text><text x="680" y="104" fill="var(--ink2)" font-size="10">เสนอเข้าใบงานขั้น 4</text>
+    <g stroke="var(--ink3)" stroke-width="2" fill="none">
+      <path d="M162 75 L207 75"/><path d="M362 75 L407 75"/><path d="M562 75 L607 75"/>
+    </g>
+  </g>
+</svg></div>
+
+<div class="tw"><table>
+<tr><th>พิมพ์ใน LINE</th><th>เกิดอะไร</th></tr>
+<tr><td>ส่งรูป/คลิป แล้วพิมพ์ <kbd>#หมวด ช่าง-งานติดตั้ง FJ ชลบุรี</kbd></td><td>ไฟล์เข้าคลัง จัดหมวด (คำแรก) + แท็ก (ที่เหลือ)</td></tr>
+<tr><td><kbd>#คลัง รถลูกค้า-รีวิว &lt;ลิงก์ Drive&gt;</kbd></td><td>ลงทะเบียนไฟล์ 4K คุณภาพเต็มจาก Drive</td></tr>
+<tr><td><kbd>#ไอเดีย อยากทำเรื่องประกันรถติดแก๊ส</kbd></td><td>สร้างใบงานใหม่ทันที ได้ลิงก์กดเปิดเลย</td></tr>
+<tr><td><kbd>#ข้อมูล โปร EcoMax เดือนนี้ 24,000</kbd></td><td>เพิ่มข้อเท็จจริง (ต้องกด #ยืนยัน ก่อน AI ใช้อ้าง)</td></tr>
+<tr><td><kbd>#กติกา ห้ามโชว์ป้ายทะเบียนชัด</kbd></td><td>สอน AI ถาวร มีผลทุกงานทันที</td></tr>
+<tr><td><kbd>#แพทเทิร์น ชื่อ | คำอธิบาย</kbd></td><td>เพิ่มสไตล์ตัดต่อแบบใหม่</td></tr>
+<tr><td><b>พิมพ์คุยธรรมดา</b></td><td>AI โปรดิวเซอร์ตอบ — ถามได้ทุกเรื่อง ("มีงานค้างไหม" "แนะนำหัวข้อหน่อย")</td></tr>
+</table></div>
+<div class="note">⚠️ ไฟล์ผ่าน LINE ถูกบีบคุณภาพ — เหมาะกับงานด่วน/ของทั่วไป ถ้าเป็นของสวยระดับใช้ตัดต่อจริง ให้เดินเส้น Google Drive (หมวด ⑥)</div>
+</div>
+
+<!-- ================= 6 ================= -->
+<div class="card" id="s6">
+<h2><span class="no">⑥</span> คลังสื่อ + Google Drive (งานหลักของเล็ก)</h2>
+<p>คลัง 8TB ไม่ต้องอัพโหลดใหม่ — ระบบทำ "สารบัญ" ให้ AI หยิบใช้ ต้นฉบับอยู่ที่เดิม</p>
+<div class="step"><div class="sn">1</div><div>ใน Drive (Tumvdo) สร้างโฟลเดอร์ <kbd>HTG-คลังสื่อ</kbd> แบ่ง 7 โฟลเดอร์ย่อย: <b>หน้าร้าน-สาขา · ช่าง-งานติดตั้ง · รถลูกค้า-รีวิว · อุปกรณ์-ถัง-หัวฉีด · ทีมงาน · โปรโมชั่น-ป้าย · B-roll</b></div></div>
+<div class="step"><div class="sn">2</div><div>ทยอยย้ายของดีเข้าหมวด — <b>เริ่ม 50-100 ไฟล์พอ</b> วิดีโอแนวตั้ง (9:16) สำคัญสุด</div></div>
+<div class="step"><div class="sn">3</div><div>ตั้งชื่อไฟล์สูตร <kbd>เรื่อง_รุ่นรถ_สาขา_ปีเดือน</kbd> เช่น <i>ติดตั้งเสร็จ_LandCruiserFJ_ชลบุรี_2606.mp4</i> (AI อ่านชื่อไฟล์เพื่อเข้าใจว่าคืออะไร — IMG_4025.jpg มันเดาไม่ออก)</div></div>
+<div class="step"><div class="sn">4</div><div>แชร์โฟลเดอร์แบบ "ทุกคนที่มีลิงก์ = ผู้ดู" → ส่งลิงก์ให้ Ed → ระบบเข้าไปทำสารบัญเอง แล้ว AI จะเริ่มเสนอฟุตเทจจากคลังให้ทุกใบงานอัตโนมัติ</div></div>
+<div class="note">✅ ระบบ index ของที่แชร์ไว้แล้วบางส่วน (วิดีโอ FJ + ภาพอุปกรณ์ Prins 10 ภาพ) — เปิดดูได้ที่เมนู "คลังสื่อ"</div>
+</div>
+
+<!-- ================= 7 ================= -->
+<div class="card" id="s7">
+<h2><span class="no">⑦</span> ระบบเรียนรู้ — AI เก่งขึ้นได้ยังไง</h2>
+
+<div class="dia"><svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" font-family="Leelawadee UI,Segoe UI,Noto Sans Thai,sans-serif">
+  <g font-size="11.5" text-anchor="middle">
+    <rect x="290" y="10" width="180" height="58" rx="12" fill="var(--goldbg)" stroke="var(--goldst)" stroke-width="1.5"/>
+    <text x="380" y="34" font-weight="700" fill="var(--ink)">AI เสนองาน</text><text x="380" y="52" fill="var(--ink2)" font-size="10.5">ทุกขั้นของใบงาน</text>
+    <rect x="560" y="95" width="180" height="58" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="650" y="119" font-weight="700" fill="var(--ink)">ทีมตรวจ / ส่งแก้</text><text x="650" y="137" fill="var(--ink2)" font-size="10.5">พร้อมพิมพ์เหตุผล</text>
+    <rect x="290" y="180" width="180" height="58" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="380" y="204" font-weight="700" fill="var(--ink)">ระบบจดเป็น "บทเรียน"</text><text x="380" y="222" fill="var(--ink2)" font-size="10.5">+ ยอดวิวจริงทุกเช้า</text>
+    <rect x="20" y="95" width="180" height="58" rx="12" fill="var(--surface)" stroke="var(--good)" stroke-width="2"/>
+    <text x="110" y="119" font-weight="700" fill="var(--good)">Ed/เล็ก กดยืนยัน</text><text x="110" y="137" fill="var(--ink2)" font-size="10.5">ในหน้า "สอน AI" → ฝังสมองถาวร</text>
+    <g stroke="var(--ink3)" stroke-width="2" fill="none" marker-end="url(#ar2)">
+      <path d="M472 45 C 560 55, 630 70, 648 92"/>
+      <path d="M645 156 C 610 190, 520 200, 474 205"/>
+      <path d="M288 208 C 190 200, 120 185, 112 156"/>
+      <path d="M115 92 C 140 55, 230 38, 286 35"/>
+    </g>
+    <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--ink3)"/></marker></defs>
+  </g>
+</svg></div>
+
+<p>ดูผลได้ 3 ที่: <b>"สอน AI"</b> (กติกา+บทเรียนทั้งหมด — กดยืนยันข้อที่ดี) · <b>"ยอดวิว"</b> (ยอดจริง 3 แพลตฟอร์ม + ข้อเสนอที่ AI วิเคราะห์จากยอด — อัพเดตเองทุกเช้า) · <b>"ทีม"</b> (ตารางความแม่น AI ต่อขั้น — พอแม่น ≥70% สองสัปดาห์ ระบบจะเสนอ "ปล่อยมือ" ให้ AI ทำเร็วขึ้น โดยเรากดยืนยันการเลื่อนเสมอ)</p>
+</div>
+
+<!-- ================= 8 ================= -->
+<div class="card" id="s8">
+<h2><span class="no">⑧</span> สิทธิ์ของแต่ละคน + กติกาเหล็ก</h2>
+<div class="tw"><table>
+<tr><th>คน</th><th>บทบาท</th><th>ทำอะไรได้</th></tr>
+<tr><td><b>Ed</b></td><td><span class="pill gold">เจ้าของ</span></td><td>ทุกอย่าง + ปลดล็อกการโพสต์ (คนเดียว)</td></tr>
+<tr><td><b>เล็ก</b></td><td><span class="pill gold">เจ้าของ (ตัวแทน Ed)</span></td><td><b>ทำแทน Ed ได้ทั้งหมด</b>: อนุมัติ Gate ขั้น 9 · ยืนยันบทเรียน/แพทเทิร์น · เพิ่มสมาชิก · ปรับคันเร่ง AI</td></tr>
+<tr><td><b>ปุ้ย</b></td><td><span class="pill">ครีเอเตอร์</span></td><td>เลือก/ตรวจ/ส่งแก้/แนบ/สร้างใบงาน (ยกเว้นขั้น 9)</td></tr>
+</table></div>
+<h3>กติกาเหล็ก 5 ข้อ</h3>
+<div class="warnbox">
+1. <b>ระบบห้ามโพสต์เองทุกกรณี</b> — ล็อก 2 ชั้น ปลดได้คนเดียวคือ Ed<br>
+2. <b>ทุกชิ้นต้องผ่าน Gate ขั้น 9</b> (Ed หรือเล็ก) ก่อนถึงโพสต์ได้<br>
+3. <b>ส่งแก้ต้องพิมพ์เหตุผลเสมอ</b> — นี่คือวิธีสอน AI ให้เก่งขึ้น<br>
+4. <b>ตัวเลข/คำเคลมต้องมาจากคลังความรู้ที่ยืนยันแล้วเท่านั้น</b> — เจอ AI เขียนเลขมั่ว ส่งแก้ + เพิ่มข้อมูลถูกด้วย #ข้อมูล<br>
+5. <b>ห้ามแตะระบบหลังบ้าน</b> (n8n / ตั้งค่า LINE console / ห้ามกด Reissue token) — เจออะไรแปลกแจ้ง Ed
+</div>
+</div>
+
+<!-- ================= 9 ================= -->
+<div class="card" id="s9">
+<h2><span class="no">⑨</span> ปัญหาพบบ่อย</h2>
+<div class="tw"><table>
+<tr><th>อาการ</th><th>วิธีแก้</th></tr>
+<tr><td>จอค้าง "กำลังเข้าสู่ระบบ"</td><td>กด ↻ ลองใหม่ / ปิดแท็บเปิดใหม่ / ลองเปิดใน Chrome</td></tr>
+<tr><td>ขึ้น "ยังไม่ถูกเพิ่มในทีม"</td><td>ส่งรหัส U ให้ Ed/เล็ก เพิ่มในเมนู "ทีม" แล้วเปิดลิงก์ใหม่</td></tr>
+<tr><td>ส่งรูปใน LINE แล้วเงียบเกิน 1 นาที</td><td>แจ้ง Ed — ระบบรับสื่ออาจติดขัด</td></tr>
+<tr><td>AI ตอบ "ยังไม่มีข้อมูลในคลัง"</td><td>ปกติ! AI ถูกห้ามมโนตัวเลข — เพิ่มข้อมูลจริงด้วย #ข้อมูล แล้วกดยืนยัน</td></tr>
+<tr><td>งานค้าง "AI กำลังเสนอ" นานผิดปกติ</td><td>ระบบกู้เองใน 10-30 นาที ถ้าเกินนั้นแจ้ง Ed</td></tr>
+<tr><td>งานค้างรอทีมนานเกิน 48 ชม.</td><td>ระบบ LINE เตือน Ed เองอัตโนมัติ</td></tr>
+<tr><td>ไม่รู้ต้องทำอะไรต่อ</td><td>พิมพ์ถาม AI ใน LINE: "มีงานอะไรรอทีมบ้าง"</td></tr>
+</table></div>
+</div>
+
+<footer>HTG Content Studio · คู่มือทีมฉบับสมบูรณ์ · อัพเดต 14 ก.ค. 2026</footer>
+</main>
+</body>
+</html>
